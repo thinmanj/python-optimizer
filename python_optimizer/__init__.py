@@ -10,7 +10,12 @@ __author__ = "Julio Ona"
 __email__ = "thinmanj@gmail.com"
 
 # Import main optimization decorator
-from .core.decorator import optimize
+from .core.decorator import (
+    optimize,
+    get_specialization_stats,
+    clear_specialization_cache,
+    configure_specialization
+)
 
 # Import JIT functions
 from .jit import (
@@ -49,6 +54,9 @@ __all__ = [
     
     # Core optimization
     "optimize",
+    "get_specialization_stats",
+    "clear_specialization_cache", 
+    "configure_specialization",
     
     # JIT functions
     "calculate_returns_jit",

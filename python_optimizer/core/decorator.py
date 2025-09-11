@@ -9,6 +9,7 @@ import functools
 import logging
 from typing import Any, Callable, Optional, Union
 from .engine import OptimizationEngine
+from ..specialization.engine import get_global_engine as get_specialization_engine
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +72,17 @@ def optimize(
             'fastmath': fastmath,
         }
         
-        # Apply optimizations
-        optimized_fn = _optimization_engine.optimize_function(fn, config)
+        # Start with original function
+        optimized_fn = fn
+        
+        # Apply JIT optimization first if enabled
+        if jit or profile:  # Profile requires JIT engine
+            optimized_fn = _optimization_engine.optimize_function(optimized_fn, config)
+        
+        # Apply variable specialization if enabled
+        if specialize:
+            spec_engine = get_specialization_engine()
+            optimized_fn = spec_engine.optimize_function(optimized_fn)
         
         # Preserve function metadata
         optimized_fn = functools.update_wrapper(optimized_fn, fn)
@@ -80,6 +90,8 @@ def optimize(
         # Add optimization metadata
         optimized_fn._optimization_config = config
         optimized_fn._original_function = fn
+        optimized_fn._has_jit = jit or profile
+        optimized_fn._has_specialization = specialize
         
         logger.debug(f"Optimized function {fn.__name__} with config: {config}")
         
@@ -117,3 +129,23 @@ def enable_profiling() -> None:
 def disable_profiling() -> None:
     """Disable global profiling."""
     _optimization_engine.disable_profiling()
+
+
+# Specialization functions
+def get_specialization_stats(func_name: Optional[str] = None) -> dict:
+    """Get variable specialization statistics."""
+    from ..specialization.engine import get_specialization_stats
+    return get_specialization_stats(func_name)
+
+
+def clear_specialization_cache(func_name: Optional[str] = None) -> None:
+    """Clear specialization cache."""
+    from ..specialization.engine import clear_specialization_cache
+    clear_specialization_cache(func_name)
+
+
+def configure_specialization(**kwargs) -> None:
+    """Configure specialization parameters."""
+    from ..specialization.engine import configure_specialization, SpecializationConfig
+    config = SpecializationConfig(**kwargs)
+    configure_specialization(config)
