@@ -8,7 +8,7 @@ Thank you for your interest in contributing to Python Optimizer! This document p
 
 1. **Fork and clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/python-optimizer.git
+   git clone https://github.com/thinmanj/python-optimizer.git
    cd python-optimizer
    ```
 

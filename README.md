@@ -31,7 +31,7 @@ Real-world performance improvements achieved:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/python-optimizer.git
+git clone https://github.com/thinmanj/python-optimizer.git
 cd python-optimizer
 
 # Install with pip
@@ -210,7 +210,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 ### Development Setup
 
 ```bash
-git clone https://github.com/yourusername/python-optimizer.git
+git clone https://github.com/thinmanj/python-optimizer.git
 cd python-optimizer
 
 # Create virtual environment
@@ -251,9 +251,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues:** [GitHub Issues](https://github.com/yourusername/python-optimizer/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/python-optimizer/discussions)  
-- **Email:** support@python-optimizer.dev
+- **Issues:** [GitHub Issues](https://github.com/thinmanj/python-optimizer/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/thinmanj/python-optimizer/discussions)
+- **Email:** thinmanj@users.noreply.github.com
 
 ---
 
