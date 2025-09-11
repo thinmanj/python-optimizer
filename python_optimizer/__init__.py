@@ -6,8 +6,8 @@ to accelerate Python code execution without changing language syntax.
 """
 
 __version__ = "0.1.0"
-__author__ = "Julio"
-__email__ = "thinmanj@users.noreply.github.com"
+__author__ = "Julio Ona"
+__email__ = "thinmanj@gmail.com"
 
 # Import main optimization decorator
 from .core.decorator import optimize

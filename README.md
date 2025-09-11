@@ -253,7 +253,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues:** [GitHub Issues](https://github.com/thinmanj/python-optimizer/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/thinmanj/python-optimizer/discussions)
-- **Email:** thinmanj@users.noreply.github.com
+- **Email:** thinmanj@gmail.com
 
 ---
 

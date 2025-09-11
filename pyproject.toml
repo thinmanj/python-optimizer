@@ -5,10 +5,10 @@ description = "High-performance Python optimization toolkit with JIT compilation
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-    {name = "Julio", email = "thinmanj@users.noreply.github.com"}
+    {name = "Julio Ona", email = "thinmanj@gmail.com"}
 ]
 maintainers = [
-    {name = "Julio", email = "thinmanj@users.noreply.github.com"}
+    {name = "Julio Ona", email = "thinmanj@gmail.com"}
 ]
 license = {text = "MIT"}
 keywords = [
