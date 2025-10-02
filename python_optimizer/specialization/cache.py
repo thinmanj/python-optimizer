@@ -166,20 +166,42 @@ class SpecializationCache:
         usage_patterns: Dict[str, Any],
     ) -> str:
         """Generate lookup key for cache retrieval."""
-        # Handle both tuple and dict param_types formats
-        if param_types:
-            if isinstance(param_types, dict):
-                # Dict format: {'arg_0': int, 'arg_1': str}
-                if param_types:
-                    primary_type = next(iter(param_types.values()))
-                    key_data = f"primary:{primary_type.__name__}:{hash(str(usage_patterns))}"
-                    return hashlib.md5(key_data.encode()).hexdigest()[:16]
-            else:
-                # Tuple format: (int, str)
-                primary_type = param_types[0]
-                key_data = f"primary:{primary_type.__name__}:{hash(str(usage_patterns))}"
-                return hashlib.md5(key_data.encode()).hexdigest()[:16]
+        # For lookup, we need to match against all stored cache keys
+        # Return all possible keys that might match this lookup
+        if func_name not in self._cache:
+            return ""
+        
+        # Look through existing entries to find a match
+        for cache_key, entry in self._cache[func_name].items():
+            # Check if the entry matches our lookup criteria
+            if self._matches_lookup_criteria(entry, param_types, usage_patterns):
+                return cache_key
+        
         return ""
+    
+    def _matches_lookup_criteria(
+        self, 
+        entry: CacheEntry, 
+        param_types: Union[Tuple[type, ...], Dict[str, type]], 
+        usage_patterns: Dict[str, Any]
+    ) -> bool:
+        """Check if a cache entry matches the lookup criteria."""
+        # Check type match
+        if isinstance(param_types, (tuple, list)) and param_types:
+            if entry.param_type != param_types[0]:
+                return False
+        elif isinstance(param_types, dict) and param_types:
+            # For dict format, check if any type matches
+            if entry.param_type not in param_types.values():
+                return False
+        
+        # Check usage pattern match (should be similar or compatible)
+        for key, value in usage_patterns.items():
+            if key in entry.usage_pattern:
+                if entry.usage_pattern[key] != value:
+                    return False
+        
+        return True
 
     def _evict_entries(self, num_to_evict: Optional[int] = None):
         """Evict entries from cache based on cache scores."""

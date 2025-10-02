@@ -64,13 +64,23 @@ class OptimizationEngine:
 
         self.stats["cache_misses"] += 1
 
-        # Apply JIT compilation if requested and available
+        # Apply profiling wrapper first if requested, before JIT compilation
         optimized_func = func
+        profile_enabled = config.get("profile", False) or self.profiling_enabled
+        
+        # Apply JIT compilation if requested and available
         if config.get("jit", False) and NUMBA_AVAILABLE:
-            optimized_func = self._apply_jit_optimization(optimized_func, config)
-
-        # Apply profiling wrapper if requested
-        if config.get("profile", False) or self.profiling_enabled:
+            if profile_enabled:
+                # For profiled JIT functions, we need to disable Numba caching
+                # to avoid pickle issues with the profiling wrapper
+                jit_config = config.copy()
+                jit_config["cache"] = False
+                optimized_func = self._apply_jit_optimization(optimized_func, jit_config)
+            else:
+                optimized_func = self._apply_jit_optimization(optimized_func, config)
+        
+        # Apply profiling wrapper after JIT compilation if not already applied
+        if profile_enabled:
             optimized_func = self._apply_profiling_wrapper(
                 optimized_func, func.__name__
             )

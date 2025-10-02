@@ -112,8 +112,8 @@ class TestSpecializationMetrics:
         metrics.update_access(execution_time=0.1, success=True)
         metrics.update_access(execution_time=0.2, success=True)
         
-        assert metrics.total_execution_time == 0.3
-        assert metrics.average_execution_time == 0.15
+        assert metrics.total_execution_time == pytest.approx(0.3)
+        assert metrics.average_execution_time == pytest.approx(0.15)
 
 
 class TestSpecializationEntry:
@@ -604,13 +604,13 @@ class TestEdgeCases:
         config = CacheConfiguration()
         cache = SpecializationCache(config)
         
-        # Test with None function
-        entry = cache.put("test_key", None, (), {})
-        assert entry.specialized_func is None
+        # Test with None function - should raise ValueError
+        with pytest.raises(ValueError, match="Specialized function cannot be None"):
+            cache.put("test_key", None, (), {})
         
-        retrieved = cache.get("test_key")
-        assert retrieved is not None
-        assert retrieved.specialized_func is None
+        # Test with non-callable object - should raise ValueError
+        with pytest.raises(ValueError, match="Specialized function must be callable"):
+            cache.put("test_key", "not_a_function", (), {})
     
     def test_extreme_cache_sizes(self):
         """Test with extreme cache configurations."""

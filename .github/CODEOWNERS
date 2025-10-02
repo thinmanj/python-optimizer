@@ -1,0 +1,32 @@
+# Code Owners for Python Optimizer
+# 
+# This file defines who owns specific parts of the codebase.
+# When a PR is created that modifies these files, the owners
+# will be automatically requested for review.
+
+# Global owners - applies to everything unless overridden
+* @thinmanj
+
+# Python source code
+*.py @thinmanj
+
+# Configuration files
+pyproject.toml @thinmanj
+Makefile @thinmanj
+*.yml @thinmanj
+*.yaml @thinmanj
+
+# CI/CD configurations
+.github/ @thinmanj
+
+# Documentation
+docs/ @thinmanj
+README.md @thinmanj
+CHANGELOG.md @thinmanj
+
+# Tests
+tests/ @thinmanj
+
+# Examples and scripts
+examples/ @thinmanj
+scripts/ @thinmanj

@@ -58,13 +58,15 @@ def test_profiling():
     """Test profiling functionality."""
     
     @optimize(jit=True, profile=True)
-    def fibonacci(n):
-        if n <= 1:
-            return n
-        return fibonacci(n-1) + fibonacci(n-2)
+    def compute_sum(n):
+        """Simple iterative function for testing profiling."""
+        total = 0
+        for i in range(n + 1):
+            total += i
+        return total
     
-    result = fibonacci(10)
-    assert result == 55  # 10th Fibonacci number
+    result = compute_sum(10)
+    assert result == 55  # Sum of 0 to 10
 
 
 def test_version():

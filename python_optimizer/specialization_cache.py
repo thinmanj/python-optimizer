@@ -171,22 +171,35 @@ class SpecializationEntry:
         original_kwargs: Dict[str, Any],
         config: CacheConfiguration,
     ):
+        # Validate function object
+        if specialized_func is None:
+            raise ValueError("Specialized function cannot be None")
+        if not callable(specialized_func):
+            raise ValueError("Specialized function must be callable")
+        
         self.key = key
-        self.specialized_func = specialized_func
         self.original_args = original_args
         self.original_kwargs = original_kwargs
         self.config = config
         self.metrics = SpecializationMetrics()
         self._compressed_data: Optional[bytes] = None
 
-        # Estimate memory usage
-        self._estimate_memory()
-
-        # Create weak reference if enabled
+        # Store function - either as weak reference or strong reference
         if config.enable_weak_references:
-            self._weak_ref = weakref.ref(specialized_func, self._cleanup)
+            try:
+                self._weak_ref = weakref.ref(specialized_func, self._cleanup)
+                self.specialized_func = None  # Don't store strong reference when using weak refs
+            except TypeError as e:
+                # Some objects don't support weak references, fall back to strong reference
+                logger.warning(f"Cannot create weak reference for {type(specialized_func)}: {e}")
+                self._weak_ref = None
+                self.specialized_func = specialized_func
         else:
             self._weak_ref = None
+            self.specialized_func = specialized_func
+
+        # Estimate memory usage
+        self._estimate_memory()
 
     def _estimate_memory(self):
         """Estimate memory usage of this entry."""
@@ -274,6 +287,16 @@ class AdaptiveEvictionStrategy:
             items_to_evict = current_size - target_size
         else:
             items_to_evict = 0
+        
+        # If we have memory pressure but no size pressure, we still need to evict items
+        # to free memory. Estimate how many items we might need to evict.
+        if memory_pressure and items_to_evict == 0:
+            # Estimate average memory per entry
+            if entries:
+                total_memory = sum(entry.metrics.memory_estimate for entry in entries.values()) / (1024 * 1024)  # MB
+                avg_memory_per_entry = total_memory / len(entries)
+                if avg_memory_per_entry > 0:
+                    items_to_evict = max(1, int(memory_to_free / avg_memory_per_entry))
 
         # Select candidates based on current policy
         return self._select_eviction_candidates(entries, memory_to_free, items_to_evict)
@@ -425,7 +448,7 @@ class AdaptiveEvictionStrategy:
         scored_entries.sort(key=lambda x: x[1], reverse=True)
 
         return [
-            key for key, _ in scored_entries[: max(items_to_evict, len(scored_entries))]
+            key for key, _ in scored_entries[: min(items_to_evict, len(scored_entries)) if items_to_evict > 0 else len(scored_entries)]
         ]
 
 
@@ -510,12 +533,12 @@ class SpecializationCache:
                 key, specialized_func, original_args, original_kwargs, self.config
             )
 
-            # Check if we need eviction
-            self._maybe_evict()
-
             # Store entry
             self._entries[key] = entry
             self._update_memory_stats()
+
+            # Check if we need eviction after adding the entry
+            self._maybe_evict()
 
             return entry
 
@@ -612,19 +635,9 @@ class SpecializationCache:
         with self._lock:
             self._last_maintenance = now
 
-            # Remove invalid entries
-            invalid_keys = []
-            for key, entry in self._entries.items():
-                if not entry.is_valid():
-                    invalid_keys.append(key)
-
-            for key in invalid_keys:
-                del self._entries[key]
-
-            if invalid_keys:
-                logger.debug(
-                    f"Removed {len(invalid_keys)} invalid entries during maintenance"
-                )
+            # Note: We don't remove invalid entries here - they are removed lazily when accessed
+            # This allows for better cache hit rates and reduces maintenance overhead
+            # Invalid entries will be cleaned up when accessed via get() method
 
             # Trigger garbage collection if memory usage is high
             if self._stats["total_memory_mb"] > self.config.max_memory_mb * 0.9:

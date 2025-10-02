@@ -221,7 +221,10 @@ class TypeAnalyzer:
         """Analyze a function's code for variable usage patterns."""
         try:
             # Get source code
+            import textwrap
             source = inspect.getsource(func)
+            # Remove common leading whitespace (dedent)
+            source = textwrap.dedent(source)
             tree = ast.parse(source)
 
             # Visit AST
