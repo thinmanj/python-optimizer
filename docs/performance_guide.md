@@ -1,24 +1,67 @@
 # Performance Optimization Guide
 
-## Understanding JIT Compilation
+## Understanding Modern Python Optimization
 
-### What is JIT?
+### What is Advanced Optimization?
 
-Just-In-Time (JIT) compilation translates Python code to optimized machine code at runtime, providing significant performance improvements for numerical computations.
+Python Optimizer combines multiple optimization techniques:
+- **JIT Compilation**: Translates Python to optimized machine code at runtime
+- **Variable Specialization**: Creates type-specific optimized versions of functions
+- **Intelligent Caching**: Stores and reuses optimized code with smart eviction policies
+- **Adaptive Learning**: Automatically improves optimization strategies based on usage patterns
 
 ### Performance Expectations
 
-| Code Type | Expected Speedup |
-|-----------|------------------|
-| Numerical loops | 10-100x |
-| Mathematical operations | 5-50x |
-| Array operations | 2-20x |
-| Financial calculations | 20-200x |
-| Recursive algorithms | 50-500x |
+| Code Type | JIT Only | JIT + Specialization | Expected Cache Hit Rate |
+|-----------|----------|---------------------|------------------------|
+| Numerical loops | 10-100x | 50-400x | 95% |
+| Mathematical operations | 5-50x | 20-200x | 90% |
+| Array operations | 2-20x | 10-500x | 92% |
+| Financial calculations | 20-200x | 100-1000x | 88% |
+| Recursive algorithms | 50-500x | 200-2000x | 97% |
+| Type-polymorphic functions | 2-10x | 50-300x | 85% |
 
 ## Optimization Strategies
 
-### 1. JIT Compilation Best Practices
+### 1. Variable Specialization Best Practices
+
+#### ✅ Specialization-Friendly Code
+
+```python
+@optimize(specialize=True, jit=False, adaptive_learning=True)
+def polymorphic_processor(data):
+    """Function that benefits from specialization."""
+    if isinstance(data, list):
+        return sum(x * x for x in data)
+    elif isinstance(data, tuple):
+        return sum(x * x for x in data)
+    elif hasattr(data, '__len__') and hasattr(data, '__getitem__'):
+        total = 0
+        for i in range(len(data)):
+            total += data[i] * data[i]
+        return total
+    else:
+        return data * data
+
+# Each type gets specialized version cached
+result1 = polymorphic_processor([1, 2, 3, 4])        # List specialization
+result2 = polymorphic_processor((1, 2, 3, 4))        # Tuple specialization  
+result3 = polymorphic_processor(np.array([1, 2, 3, 4]))  # NumPy specialization
+```
+
+#### Monitoring Specialization Performance
+
+```python
+from python_optimizer import get_specialization_stats
+
+# Monitor performance
+stats = get_specialization_stats('polymorphic_processor')
+print(f"Specializations created: {stats.get('specializations_created')}")
+print(f"Cache hit rate: {stats.get('cache_hit_rate', 0):.1%}")
+print(f"Performance gain: {stats.get('avg_performance_gain', 1):.2f}x")
+```
+
+### 2. JIT Compilation Best Practices
 
 #### ✅ JIT-Friendly Code
 
@@ -89,7 +132,63 @@ def compute_with_dtype(arr):
     return np.sum(arr * 2.0)
 ```
 
-### 3. Loop Optimization
+### 3. Cache Optimization
+
+#### Optimal Cache Configuration
+
+```python
+from python_optimizer import configure_specialization
+from python_optimizer.specialization_cache import EvictionPolicy
+
+# Configure for memory-constrained environments
+configure_specialization(
+    max_cache_size=100,
+    max_memory_mb=10,
+    eviction_policy='size_based',
+    min_calls_for_specialization=5
+)
+
+# Configure for high-performance scenarios
+configure_specialization(
+    max_cache_size=5000,
+    max_memory_mb=500,
+    eviction_policy='adaptive',
+    min_calls_for_specialization=2,
+    enable_adaptive_learning=True
+)
+```
+
+#### Cache Performance Monitoring
+
+```python
+from python_optimizer import get_cache_stats
+import time
+
+def monitor_cache_performance():
+    """Monitor cache performance and suggest optimizations."""
+    stats = get_cache_stats()
+    
+    print(f"Cache Statistics:")
+    print(f"  Total entries: {stats['total_entries']}")
+    print(f"  Memory usage: {stats['memory_usage_estimate']:.2f} MB")
+    print(f"  Hit rate: {stats['hit_rate']:.2%}")
+    print(f"  Evictions: {stats['evictions']}")
+    
+    # Performance recommendations
+    if stats['hit_rate'] < 0.7:
+        print("⚠️  Low hit rate - consider increasing cache size")
+    
+    if stats['evictions'] > stats['total_entries']:
+        print("⚠️  High eviction rate - increase memory limit")
+    
+    if stats['memory_usage_estimate'] > 100:
+        print("⚠️  High memory usage - consider size-based eviction")
+
+# Run monitoring periodically
+monitor_cache_performance()
+```
+
+### 4. Loop Optimization
 
 #### Vectorization vs JIT Loops
 

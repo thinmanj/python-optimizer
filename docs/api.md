@@ -4,12 +4,21 @@
 
 ### @optimize Decorator
 
-The main entry point for Python optimization.
+The main entry point for Python optimization with advanced specialization capabilities.
 
 ```python
 from python_optimizer import optimize
 
-@optimize(jit=True, specialize=False, profile=True, aggressiveness=2)
+@optimize(
+    jit=True, 
+    specialize=True, 
+    profile=True, 
+    aggressiveness=2,
+    cache=True,
+    adaptive_learning=True,
+    memory_limit_mb=100,
+    min_calls_for_spec=3
+)
 def my_function(x, y):
     return x * y + expensive_computation()
 ```
@@ -17,13 +26,19 @@ def my_function(x, y):
 #### Parameters
 
 - **jit** (bool, default=True): Enable JIT compilation using Numba
-- **specialize** (bool, default=False): Enable variable type specialization
+- **specialize** (bool, default=True): Enable intelligent variable type specialization
 - **profile** (bool, default=True): Enable performance profiling
 - **aggressiveness** (int, 0-3, default=2): Optimization level
   - 0: Conservative optimizations only
   - 1: Standard optimizations
   - 2: Aggressive optimizations (recommended)
   - 3: Experimental optimizations (may break compatibility)
+- **cache** (bool, default=True): Enable specialization caching
+- **adaptive_learning** (bool, default=True): Enable adaptive optimization learning
+- **memory_limit_mb** (int, default=100): Memory limit for specialization cache (MB)
+- **min_calls_for_spec** (int, default=3): Minimum calls before creating specialization
+- **eviction_policy** (str, default='adaptive'): Cache eviction policy ('lru', 'lfu', 'adaptive', 'size_based')
+- **ttl_seconds** (int, default=None): Time-to-live for cached specializations
 
 #### Returns
 
@@ -49,6 +64,121 @@ def monte_carlo_pi(n_samples):
         if x*x + y*y <= 1:
             count += 1
     return 4.0 * count / n_samples
+```
+
+---
+
+## Specialization Management
+
+Advanced functions for managing variable specialization and caching.
+
+### configure_specialization()
+
+Configure global specialization behavior.
+
+```python
+from python_optimizer import configure_specialization
+
+configure_specialization(
+    min_calls_for_specialization=3,
+    min_performance_gain=0.1,
+    enable_adaptive_learning=True,
+    max_cache_size=1000,
+    max_memory_mb=100,
+    eviction_policy='adaptive',
+    ttl_seconds=3600
+)
+```
+
+#### Parameters
+
+- **min_calls_for_specialization** (int): Minimum function calls before specialization
+- **min_performance_gain** (float): Minimum performance improvement threshold
+- **enable_adaptive_learning** (bool): Enable adaptive optimization patterns
+- **max_cache_size** (int): Maximum number of cached specializations
+- **max_memory_mb** (int): Maximum memory usage for cache
+- **eviction_policy** (str): Cache eviction strategy
+- **ttl_seconds** (int): Time-to-live for cache entries
+
+### get_specialization_stats()
+
+Get detailed specialization statistics.
+
+```python
+from python_optimizer import get_specialization_stats
+
+# Get stats for specific function
+stats = get_specialization_stats('my_function')
+print(f"Specializations created: {stats.get('specializations_created')}")
+print(f"Cache hit rate: {stats.get('cache_hit_rate'):.2%}")
+print(f"Average performance gain: {stats.get('avg_performance_gain'):.2f}x")
+print(f"Total calls: {stats.get('total_calls')}")
+print(f"Specialized calls: {stats.get('specialized_calls')}")
+
+# Get global stats
+global_stats = get_specialization_stats()
+print(f"Total functions optimized: {len(global_stats)}")
+```
+
+### clear_specialization_cache()
+
+Clear specialization cache entries.
+
+```python
+from python_optimizer import clear_specialization_cache
+
+# Clear all cached specializations
+clear_specialization_cache()
+
+# Clear specific function's specializations
+clear_specialization_cache('my_function')
+
+# Clear based on criteria
+clear_specialization_cache(min_age_hours=24)  # Clear entries older than 24 hours
+clear_specialization_cache(max_memory_mb=50)  # Clear until memory usage < 50MB
+```
+
+### get_cache_stats()
+
+Get detailed cache performance statistics.
+
+```python
+from python_optimizer import get_cache_stats
+
+stats = get_cache_stats()
+print(f"Total entries: {stats['total_entries']}")
+print(f"Memory usage: {stats['memory_usage_estimate']:.2f} MB")
+print(f"Hit rate: {stats['hit_rate']:.2%}")
+print(f"Evictions: {stats['evictions']}")
+print(f"Cache uptime: {stats['uptime_hours']:.1f} hours")
+```
+
+### Advanced Cache Configuration
+
+```python
+from python_optimizer.specialization_cache import (
+    CacheConfiguration, 
+    EvictionPolicy,
+    configure_cache
+)
+
+# Create custom cache configuration
+config = CacheConfiguration(
+    max_size=2000,
+    max_memory_mb=200,
+    eviction_policy=EvictionPolicy.ADAPTIVE,
+    ttl_seconds=7200,  # 2 hours
+    enable_weak_references=True,
+    adaptive_thresholds={
+        'hit_rate_threshold': 0.8,
+        'age_weight': 0.2,
+        'frequency_weight': 0.5,
+        'size_weight': 0.3
+    }
+)
+
+# Apply configuration
+configure_cache(config)
 ```
 
 ---
