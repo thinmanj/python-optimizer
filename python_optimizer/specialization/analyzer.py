@@ -252,22 +252,13 @@ class TypeAnalyzer:
 
     def record_runtime_call(self, func_name: str, args: Tuple, kwargs: Dict):
         """Record a runtime function call with actual types."""
-        param_names = []
-
-        try:
-            # Try to get parameter names from function signature
-            frame = inspect.currentframe().f_back.f_back
-            if frame and frame.f_code.co_name == func_name:
-                param_names = frame.f_code.co_varnames[: frame.f_code.co_argcount]
-        except:
-            # Fallback to generic parameter names
-            param_names = [f"arg_{i}" for i in range(len(args))]
+        # Use generic parameter names for now - this is more reliable
+        param_names = [f"arg_{i}" for i in range(len(args))]
 
         # Record argument types
         for i, arg in enumerate(args):
-            if i < len(param_names):
-                param_name = param_names[i]
-                self.runtime_types[func_name][param_name].append(type(arg))
+            param_name = param_names[i] if i < len(param_names) else f"arg_{i}"
+            self.runtime_types[func_name][param_name].append(type(arg))
 
         # Record keyword argument types
         for param_name, value in kwargs.items():

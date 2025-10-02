@@ -13,7 +13,7 @@ import time
 import weakref
 from collections import OrderedDict, defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 
 @dataclass
@@ -162,15 +162,23 @@ class SpecializationCache:
     def _generate_lookup_key(
         self,
         func_name: str,
-        param_types: Tuple[type, ...],
+        param_types: Union[Tuple[type, ...], Dict[str, type]],
         usage_patterns: Dict[str, Any],
     ) -> str:
         """Generate lookup key for cache retrieval."""
-        # Simplified key generation - in practice might need more sophisticated matching
+        # Handle both tuple and dict param_types formats
         if param_types:
-            primary_type = param_types[0]
-            key_data = f"primary:{primary_type.__name__}:{hash(str(usage_patterns))}"
-            return hashlib.md5(key_data.encode()).hexdigest()[:16]
+            if isinstance(param_types, dict):
+                # Dict format: {'arg_0': int, 'arg_1': str}
+                if param_types:
+                    primary_type = next(iter(param_types.values()))
+                    key_data = f"primary:{primary_type.__name__}:{hash(str(usage_patterns))}"
+                    return hashlib.md5(key_data.encode()).hexdigest()[:16]
+            else:
+                # Tuple format: (int, str)
+                primary_type = param_types[0]
+                key_data = f"primary:{primary_type.__name__}:{hash(str(usage_patterns))}"
+                return hashlib.md5(key_data.encode()).hexdigest()[:16]
         return ""
 
     def _evict_entries(self, num_to_evict: Optional[int] = None):
