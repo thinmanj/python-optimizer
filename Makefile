@@ -110,3 +110,22 @@ profile:
 security:
 	safety check
 	bandit -r python_optimizer/
+
+# CI/CD helper
+ci-check:
+	python3 scripts/ci_cd_helper.py --step all
+
+ci-lint:
+	python3 scripts/ci_cd_helper.py --step lint
+
+ci-format-check:
+	python3 scripts/ci_cd_helper.py --step format
+
+ci-format-fix:
+	python3 scripts/ci_cd_helper.py --fix
+
+ci-test:
+	python3 scripts/ci_cd_helper.py --step test
+
+ci-build:
+	python3 scripts/ci_cd_helper.py --step build
