@@ -3,17 +3,17 @@ Genetic algorithm module for parameter optimization.
 """
 
 from .genetic_optimizer import (
-    Individual,
-    ParameterRange,
-    OptimizationResult,
     FitnessEvaluator,
-    GeneticOptimizer
+    GeneticOptimizer,
+    Individual,
+    OptimizationResult,
+    ParameterRange,
 )
 
 __all__ = [
     "Individual",
-    "ParameterRange", 
+    "ParameterRange",
     "OptimizationResult",
     "FitnessEvaluator",
-    "GeneticOptimizer"
+    "GeneticOptimizer",
 ]
