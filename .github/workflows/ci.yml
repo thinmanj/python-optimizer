@@ -85,6 +85,12 @@ jobs:
     
     - name: Run tests with pytest
       run: |
+        echo "=== Running tests with pytest ==="
+        echo "Python version: $(python --version)"
+        echo "Pytest version: $(pytest --version)"
+        echo "Working directory: $(pwd)"
+        echo "PYTHONPATH: $PYTHONPATH"
+        
         pytest tests/ \
           --cov=python_optimizer \
           --cov-report=xml \
@@ -92,7 +98,17 @@ jobs:
           --cov-report=term-missing \
           --junitxml=test-results.xml \
           --tb=short \
-          -v
+          -v || {
+            echo "=== Test failure details ==="
+            echo "Exit code: $?"
+            if [[ -f test-results.xml ]]; then
+              echo "Test results file exists"
+              ls -la test-results.xml
+            else
+              echo "No test results file found"
+            fi
+            exit 1
+          }
       env:
         PYTHONPATH: ${{ github.workspace }}
     
@@ -161,10 +177,20 @@ jobs:
         pip install safety bandit
     
     - name: Security check with Safety
-      run: safety check --json --output safety-results.json || true
+      run: |
+        echo "=== Running Safety security check ==="
+        safety check --json --output safety-results.json || {
+          echo "Safety check failed or found issues (exit code: $?)"
+          echo "This is expected and won't fail the build"
+        }
     
     - name: Security check with Bandit
-      run: bandit -r python_optimizer/ -f json -o bandit-results.json || true
+      run: |
+        echo "=== Running Bandit security check ==="
+        bandit -r python_optimizer/ -f json -o bandit-results.json || {
+          echo "Bandit check failed or found issues (exit code: $?)"
+          echo "This is expected and won't fail the build"
+        }
     
     - name: Upload security results
       uses: actions/upload-artifact@v3

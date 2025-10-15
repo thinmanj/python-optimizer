@@ -188,15 +188,15 @@ class SpecializationEntry:
         if config.enable_weak_references:
             try:
                 self._weak_ref = weakref.ref(specialized_func, self._cleanup)
-                self.specialized_func = None  # Don't store strong reference when using weak refs
+                self._specialized_func = None  # Don't store strong reference when using weak refs
             except TypeError as e:
                 # Some objects don't support weak references, fall back to strong reference
                 logger.warning(f"Cannot create weak reference for {type(specialized_func)}: {e}")
                 self._weak_ref = None
-                self.specialized_func = specialized_func
+                self._specialized_func = specialized_func
         else:
             self._weak_ref = None
-            self.specialized_func = specialized_func
+            self._specialized_func = specialized_func
 
         # Estimate memory usage
         self._estimate_memory()
@@ -206,7 +206,7 @@ class SpecializationEntry:
         try:
             size = sys.getsizeof(self)
             size += sys.getsizeof(self.key)
-            size += sys.getsizeof(self.specialized_func) if self.specialized_func else 0
+            size += sys.getsizeof(self._specialized_func) if hasattr(self, '_specialized_func') and self._specialized_func else 0
             size += sys.getsizeof(self.original_args)
             size += sys.getsizeof(self.original_kwargs)
 
@@ -236,10 +236,22 @@ class SpecializationEntry:
 
         return True
 
+    @property
+    def specialized_func(self) -> Optional[Callable]:
+        """Get the specialized function, handling weak references transparently."""
+        if hasattr(self, '_weak_ref') and self._weak_ref:
+            return self._weak_ref()
+        elif hasattr(self, '_specialized_func'):
+            return self._specialized_func
+        return None
+    
+    @specialized_func.setter
+    def specialized_func(self, value: Optional[Callable]):
+        """Set the specialized function."""
+        self._specialized_func = value
+    
     def get_specialized_func(self) -> Optional[Callable]:
         """Get the specialized function, handling weak references."""
-        if self._weak_ref:
-            return self._weak_ref()
         return self.specialized_func
 
     def update_metrics(self, execution_time: float = 0.0, success: bool = True):
