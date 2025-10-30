@@ -68,6 +68,33 @@ except ImportError:
         return {"available": False, "message": "GPU support not installed"}
 
 
+# Import ML optimization components (optional - requires PyTorch)
+try:
+    from .ml import (
+        InferenceOptimizer,
+        PYTORCH_AVAILABLE,
+        PYTORCH_VERSION,
+        PyTorchModelOptimizer,
+        TrainingOptimizer,
+        check_framework_availability,
+        optimize_inference,
+        optimize_model,
+        optimize_training,
+    )
+
+    _ML_AVAILABLE = True
+except ImportError:
+    _ML_AVAILABLE = False
+    PYTORCH_AVAILABLE = False
+    PYTORCH_VERSION = None
+
+    def check_framework_availability():
+        return {
+            "pytorch": {"available": False, "version": None},
+            "tensorflow": {"available": False, "version": None},
+        }
+
+
 __all__ = [
     # Version and metadata
     "__version__",
@@ -101,6 +128,9 @@ __all__ = [
     # GPU (if available)
     "is_gpu_available",
     "get_gpu_info",
+    # ML optimization (if available)
+    "check_framework_availability",
+    "PYTORCH_AVAILABLE",
 ]
 
 # Add full GPU API to __all__ if available
@@ -115,5 +145,19 @@ if _GPU_AVAILABLE:
             "get_gpu_device",
             "get_gpu_memory_info",
             "set_gpu_device",
+        ]
+    )
+
+# Add full ML API to __all__ if available
+if _ML_AVAILABLE:
+    __all__.extend(
+        [
+            "PyTorchModelOptimizer",
+            "TrainingOptimizer",
+            "InferenceOptimizer",
+            "optimize_model",
+            "optimize_training",
+            "optimize_inference",
+            "PYTORCH_VERSION",
         ]
     )

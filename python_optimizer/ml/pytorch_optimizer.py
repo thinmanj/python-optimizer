@@ -396,7 +396,7 @@ class InferenceOptimizer:
         # Process in batches
         results = []
         for i in range(0, len(inputs_list), self.batch_size):
-            batch = inputs_list[i : i + self.batch_size]
+            batch = inputs_list[i: i + self.batch_size]
             batched = (
                 torch.stack(batch) if isinstance(batch[0], torch.Tensor) else batch
             )
