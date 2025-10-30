@@ -87,7 +87,9 @@ class _GPUDeviceManager:
                 device_count = cp.cuda.runtime.getDeviceCount()
                 self._gpu_available = device_count > 0
                 if self._gpu_available:
-                    logger.info(f"GPU available: {device_count} CUDA device(s) detected via CuPy")
+                    logger.info(
+                        f"GPU available: {device_count} CUDA device(s) detected via CuPy"
+                    )
                 return self._gpu_available
             except Exception as e:
                 logger.debug(f"CuPy GPU detection failed: {e}")
@@ -156,7 +158,11 @@ class _GPUDeviceManager:
                 # Numba provides limited info
                 return GPUDevice(
                     device_id=device_id,
-                    name=device.name.decode("utf-8") if hasattr(device.name, "decode") else str(device.name),
+                    name=(
+                        device.name.decode("utf-8")
+                        if hasattr(device.name, "decode")
+                        else str(device.name)
+                    ),
                     compute_capability=device.compute_capability,
                     total_memory=0,  # Not easily available in Numba
                     free_memory=0,

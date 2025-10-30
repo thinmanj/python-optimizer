@@ -75,7 +75,9 @@ class GPUMemoryManager:
         self._peak_memory = 0
         self._enable_pool = True
 
-    def get_memory_info(self, device_id: Optional[int] = None) -> Optional[GPUMemoryInfo]:
+    def get_memory_info(
+        self, device_id: Optional[int] = None
+    ) -> Optional[GPUMemoryInfo]:
         """Get current GPU memory information.
 
         Args:
@@ -140,7 +142,9 @@ class GPUMemoryManager:
                 # Track allocation
                 with self._lock:
                     arr_id = id(arr)
-                    self._allocations[arr_id] = weakref.ref(arr, self._cleanup_callback(arr_id))
+                    self._allocations[arr_id] = weakref.ref(
+                        arr, self._cleanup_callback(arr_id)
+                    )
                     self._allocation_sizes[arr_id] = size
 
                     # Update peak memory

@@ -59,12 +59,14 @@ try:
     _GPU_AVAILABLE = True
 except ImportError:
     _GPU_AVAILABLE = False
+
     # Provide stub functions for graceful degradation
     def is_gpu_available():
         return False
 
     def get_gpu_info():
         return {"available": False, "message": "GPU support not installed"}
+
 
 __all__ = [
     # Version and metadata
