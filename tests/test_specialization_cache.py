@@ -122,7 +122,9 @@ class TestSpecializationMetrics:
         metrics.update_access(execution_time=0.1, success=True)
         metrics.update_access(execution_time=0.2, success=True)
 
-        assert abs(metrics.total_execution_time - 0.3) < 1e-10  # Use tolerance for floats
+        assert (
+            abs(metrics.total_execution_time - 0.3) < 1e-10
+        )  # Use tolerance for floats
         assert abs(metrics.average_execution_time - 0.15) < 1e-10
 
 
@@ -159,7 +161,7 @@ class TestSpecializationEntry:
 
         # Store a local reference before del
         func_id = id(dummy_func)
-        
+
         # After function is garbage collected
         del dummy_func
         # Multiple GC cycles may be needed
@@ -496,10 +498,10 @@ class TestSpecializationCache:
 
         # Entry should be removed on next maintenance
         cache.maintenance()
-        
+
         # Entry removal timing depends on maintenance cycle
         # Just verify maintenance mechanism exists
-        assert hasattr(cache, 'maintenance')
+        assert hasattr(cache, "maintenance")
 
 
 class TestGlobalCacheFunctions:
@@ -630,7 +632,9 @@ class TestEdgeCases:
 
     def test_invalid_function_objects(self):
         """Test handling of invalid function objects."""
-        config = CacheConfiguration(enable_weak_references=False)  # Disable weak refs for None
+        config = CacheConfiguration(
+            enable_weak_references=False
+        )  # Disable weak refs for None
         cache = SpecializationCache(config)
 
         # Test with None function - should be handled gracefully

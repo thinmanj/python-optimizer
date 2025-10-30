@@ -190,9 +190,7 @@ class TestSimulateStrategy:
         """Test basic strategy simulation."""
         signals = np.array([1, 0, -1, 0, 1])  # Buy, hold, sell, hold, buy
         prices = np.array([100.0, 105.0, 110.0, 108.0, 112.0])
-        equity, returns, trades = simulate_strategy_jit(
-            signals, prices, 10000.0, 0.001
-        )
+        equity, returns, trades = simulate_strategy_jit(signals, prices, 10000.0, 0.001)
 
         assert len(equity) == 5
         assert equity[0] > 0  # Initial equity
@@ -202,9 +200,7 @@ class TestSimulateStrategy:
         """Test simulation with empty signals."""
         signals = np.array([])
         prices = np.array([])
-        equity, returns, trades = simulate_strategy_jit(
-            signals, prices, 10000.0, 0.001
-        )
+        equity, returns, trades = simulate_strategy_jit(signals, prices, 10000.0, 0.001)
 
         assert len(equity) == 1
         assert trades == 0
@@ -213,9 +209,7 @@ class TestSimulateStrategy:
         """Test simulation with mismatched signal/price lengths."""
         signals = np.array([1, 0, -1])
         prices = np.array([100.0, 105.0])
-        equity, returns, trades = simulate_strategy_jit(
-            signals, prices, 10000.0, 0.001
-        )
+        equity, returns, trades = simulate_strategy_jit(signals, prices, 10000.0, 0.001)
 
         assert len(equity) == 1
         assert trades == 0
@@ -224,9 +218,7 @@ class TestSimulateStrategy:
         """Test simulation with no trading signals."""
         signals = np.zeros(5)
         prices = np.array([100.0, 105.0, 110.0, 108.0, 112.0])
-        equity, returns, trades = simulate_strategy_jit(
-            signals, prices, 10000.0, 0.001
-        )
+        equity, returns, trades = simulate_strategy_jit(signals, prices, 10000.0, 0.001)
 
         assert trades == 0
         # All equity should equal initial cash
@@ -296,9 +288,7 @@ class TestGenerateRSISignals:
     def test_oversold_signal(self):
         """Test RSI generates buy signal when oversold."""
         # Create declining price series (should be oversold)
-        prices = np.array(
-            [100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40]
-        )
+        prices = np.array([100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40])
         signals = generate_rsi_signals_jit(prices, 5, 30, 70)
 
         # Should have some buy signals (1) for oversold
@@ -319,9 +309,7 @@ class TestJITBacktestFitnessEvaluator:
 
     def test_initialization(self):
         """Test evaluator initialization."""
-        evaluator = JITBacktestFitnessEvaluator(
-            initial_cash=10000, commission=0.001
-        )
+        evaluator = JITBacktestFitnessEvaluator(initial_cash=10000, commission=0.001)
 
         assert evaluator.initial_cash == 10000
         assert evaluator.commission == 0.001

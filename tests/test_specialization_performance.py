@@ -65,7 +65,9 @@ class TestSpecializationPerformance:
             "p95": sorted(times)[int(0.95 * len(times))],
         }
 
-    @pytest.mark.xfail(reason="Specialization system needs more work to be reliably testable")
+    @pytest.mark.xfail(
+        reason="Specialization system needs more work to be reliably testable"
+    )
     def test_numeric_specialization_performance(self):
         """Test performance improvement from numeric specialization."""
 
@@ -289,7 +291,9 @@ class TestSpecializationPerformance:
 
         # Adaptive learning should function (may or may not show improvement in micro-benchmarks)
         # The key is that specialization is working, not necessarily faster in all cases
-        assert stats.get("specialized_calls", 0) >= 0, "Specialization system should be operational"
+        assert (
+            stats.get("specialized_calls", 0) >= 0
+        ), "Specialization system should be operational"
         # Allow significant variation as specialization overhead can vary
         assert improvement >= -0.5, f"Severe performance degradation: {improvement:.2%}"
 
