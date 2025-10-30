@@ -221,15 +221,22 @@ class GeneticOptimizer:
         child2 = Individual()
 
         genes = list(self.parameter_ranges.keys())
-        crossover_point = random.randint(1, len(genes) - 1)
-
-        for i, gene in enumerate(genes):
-            if i < crossover_point:
+        
+        # Handle single-gene case
+        if len(genes) <= 1:
+            # Just copy genes directly (no crossover point possible)
+            for gene in genes:
                 child1.genes[gene] = parent1.genes[gene]
                 child2.genes[gene] = parent2.genes[gene]
-            else:
-                child1.genes[gene] = parent2.genes[gene]
-                child2.genes[gene] = parent1.genes[gene]
+        else:
+            crossover_point = random.randint(1, len(genes) - 1)
+            for i, gene in enumerate(genes):
+                if i < crossover_point:
+                    child1.genes[gene] = parent1.genes[gene]
+                    child2.genes[gene] = parent2.genes[gene]
+                else:
+                    child1.genes[gene] = parent2.genes[gene]
+                    child2.genes[gene] = parent1.genes[gene]
 
         return child1, child2
 
