@@ -59,13 +59,16 @@ def test_profiling():
     """Test profiling functionality."""
 
     @optimize(jit=True, profile=True)
-    def fibonacci(n):
-        if n <= 1:
-            return n
-        return fibonacci(n - 1) + fibonacci(n - 2)
+    def compute_sum(arr):
+        """Simple iterative function that Numba can compile."""
+        total = 0.0
+        for i in range(len(arr)):
+            total += arr[i] * arr[i]
+        return total
 
-    result = fibonacci(10)
-    assert result == 55  # 10th Fibonacci number
+    arr = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+    result = compute_sum(arr)
+    assert result == 55.0  # 1 + 4 + 9 + 16 + 25
 
 
 def test_version():

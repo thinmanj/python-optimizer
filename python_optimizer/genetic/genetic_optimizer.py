@@ -304,7 +304,11 @@ class GeneticOptimizer:
                 child1 = self.mutate(child1)
                 child2 = self.mutate(child2)
 
-                new_population.extend([child1, child2])
+                # Add children, but don't exceed population size
+                if len(new_population) < self.population_size:
+                    new_population.append(child1)
+                if len(new_population) < self.population_size:
+                    new_population.append(child2)
 
             # Trim to population size
             new_population = new_population[: self.population_size]
