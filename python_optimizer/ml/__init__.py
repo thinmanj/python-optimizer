@@ -37,7 +37,18 @@ except ImportError:
     PYTORCH_VERSION = None
     torch = None
 
-# Core ML optimization functions
+# Try to import TensorFlow
+try:
+    import tensorflow as tf
+
+    TENSORFLOW_AVAILABLE = True
+    TENSORFLOW_VERSION = tf.__version__
+except ImportError:
+    TENSORFLOW_AVAILABLE = False
+    TENSORFLOW_VERSION = None
+    tf = None
+
+# Core ML optimization functions - PyTorch
 from python_optimizer.ml.pytorch_optimizer import (
     InferenceOptimizer,
     PyTorchModelOptimizer,
@@ -45,6 +56,16 @@ from python_optimizer.ml.pytorch_optimizer import (
     optimize_inference,
     optimize_model,
     optimize_training,
+)
+
+# Core ML optimization functions - TensorFlow
+from python_optimizer.ml.tensorflow_optimizer import (
+    TFInferenceOptimizer,
+    TFModelOptimizer,
+    TFTrainingOptimizer,
+    optimize_tf_inference,
+    optimize_tf_model,
+    optimize_tf_training,
 )
 
 __all__ = [
@@ -55,9 +76,18 @@ __all__ = [
     "PyTorchModelOptimizer",
     "TrainingOptimizer",
     "InferenceOptimizer",
+    # TensorFlow optimization
+    "optimize_tf_model",
+    "optimize_tf_training",
+    "optimize_tf_inference",
+    "TFModelOptimizer",
+    "TFTrainingOptimizer",
+    "TFInferenceOptimizer",
     # Framework availability
     "PYTORCH_AVAILABLE",
     "PYTORCH_VERSION",
+    "TENSORFLOW_AVAILABLE",
+    "TENSORFLOW_VERSION",
 ]
 
 
@@ -73,7 +103,7 @@ def check_framework_availability():
             "version": PYTORCH_VERSION,
         },
         "tensorflow": {
-            "available": False,
-            "version": None,
+            "available": TENSORFLOW_AVAILABLE,
+            "version": TENSORFLOW_VERSION,
         },
     }
