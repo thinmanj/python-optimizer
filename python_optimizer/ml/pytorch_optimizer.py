@@ -343,7 +343,6 @@ class InferenceOptimizer:
             'avg_inference_time': 0.0,
         }
 
-    @torch.no_grad()
     def predict(self, inputs: Any) -> Any:
         """Optimized inference.
         
@@ -355,14 +354,15 @@ class InferenceOptimizer:
         """
         start_time = time.perf_counter()
         
-        # Move inputs to device
-        if isinstance(inputs, torch.Tensor):
-            inputs = inputs.to(self.device)
-        elif isinstance(inputs, (list, tuple)):
-            inputs = [x.to(self.device) if isinstance(x, torch.Tensor) else x for x in inputs]
-        
-        # Forward pass
-        outputs = self.model(inputs)
+        with torch.no_grad():
+            # Move inputs to device
+            if isinstance(inputs, torch.Tensor):
+                inputs = inputs.to(self.device)
+            elif isinstance(inputs, (list, tuple)):
+                inputs = [x.to(self.device) if isinstance(x, torch.Tensor) else x for x in inputs]
+            
+            # Forward pass
+            outputs = self.model(inputs)
         
         # Update statistics
         elapsed = time.perf_counter() - start_time

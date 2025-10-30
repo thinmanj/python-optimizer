@@ -198,7 +198,7 @@ class GPUDispatcher:
         """
 
         def decorator(func):
-            nonlocal cpu_func, gpu_func
+            nonlocal cpu_func
 
             if cpu_func is None:
                 cpu_func = func
