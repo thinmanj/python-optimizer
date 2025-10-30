@@ -29,6 +29,8 @@ def optimize(
     parallel: bool = False,
     nogil: bool = False,
     fastmath: bool = True,
+    gpu: bool = False,
+    gpu_min_size: int = 10000,
 ) -> Union[Callable, Callable[[Callable], Callable]]:
     """
     Optimize a Python function using JIT compilation and other techniques.
@@ -43,6 +45,8 @@ def optimize(
         parallel: Enable parallel execution where possible
         nogil: Release GIL during execution (requires compatible code)
         fastmath: Enable fast math optimizations (may reduce accuracy)
+        gpu: Enable GPU acceleration (auto-detects and falls back to CPU)
+        gpu_min_size: Minimum data size (in elements) to use GPU
 
     Returns:
         Optimized function or decorator
@@ -58,6 +62,11 @@ def optimize(
             for i in range(len(data)):
                 result += data[i] ** 2
             return result
+
+        @optimize(gpu=True)
+        def gpu_computation(data):
+            # Automatically runs on GPU for large arrays
+            return data ** 2 + data * 3
     """
 
     def decorator(fn: Callable) -> Callable:
@@ -71,6 +80,8 @@ def optimize(
             "parallel": parallel,
             "nogil": nogil,
             "fastmath": fastmath,
+            "gpu": gpu,
+            "gpu_min_size": gpu_min_size,
         }
 
         # Start with original function
@@ -79,6 +90,20 @@ def optimize(
         # Apply JIT optimization first if enabled
         if jit or profile:  # Profile requires JIT engine
             optimized_fn = _optimization_engine.optimize_function(optimized_fn, config)
+
+        # Apply GPU optimization if enabled
+        if gpu:
+            try:
+                from ..gpu.dispatcher import GPUDispatcher
+                dispatcher = GPUDispatcher(
+                    min_size_threshold=gpu_min_size,
+                    force_gpu=False,
+                    force_cpu=False,
+                )
+                optimized_fn = dispatcher.wrap(optimized_fn)
+                logger.debug(f"Applied GPU optimization to {fn.__name__}")
+            except ImportError as e:
+                logger.warning(f"GPU optimization requested but unavailable: {e}. Falling back to CPU.")
 
         # Apply variable specialization if enabled
         if specialize:
@@ -93,6 +118,7 @@ def optimize(
         optimized_fn._original_function = fn
         optimized_fn._has_jit = jit or profile
         optimized_fn._has_specialization = specialize
+        optimized_fn._has_gpu = gpu
 
         logger.debug(f"Optimized function {fn.__name__} with config: {config}")
 

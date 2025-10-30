@@ -12,6 +12,7 @@ A high-performance Python optimization toolkit that provides JIT compilation, ad
 
 Accelerate Python program execution by **10-500x** through:
 - **Advanced JIT compilation** with Numba and custom optimizations
+- **GPU acceleration** with automatic CPU/GPU dispatching (CUDA/CuPy)
 - **Intelligent variable specialization** with type-aware caching  
 - **Adaptive optimization** based on runtime patterns
 - **Specialization caching** with smart memory management
@@ -110,13 +111,38 @@ metrics = evaluator.evaluate(individual, market_data)
 # Achieves 36,000+ evaluations per second
 ```
 
-### 5. Advanced Caching & Monitoring
+### 5. GPU Acceleration (NEW! 🎉)
+
+```python
+from python_optimizer import optimize, is_gpu_available
+import numpy as np
+
+# Check GPU availability
+if is_gpu_available():
+    print("GPU acceleration available!")
+
+# Enable GPU acceleration with automatic CPU/GPU dispatching
+@optimize(gpu=True, gpu_min_size=10_000, jit=False)
+def gpu_compute(data):
+    return data ** 2 + data * 3
+
+# Automatically uses GPU for large arrays, CPU for small ones
+small_array = np.random.randn(1000)       # Uses CPU
+large_array = np.random.randn(1_000_000)  # Uses GPU
+
+result1 = gpu_compute(small_array)
+result2 = gpu_compute(large_array)  # 5-20x faster on GPU!
+```
+
+### 6. Advanced Caching & Monitoring
 
 ```python
 from python_optimizer import (
     get_specialization_stats, 
     clear_specialization_cache,
-    configure_specialization
+    configure_specialization,
+    get_gpu_info,
+    get_gpu_memory_info
 )
 
 # Configure specialization behavior
@@ -130,6 +156,13 @@ configure_specialization(
 stats = get_specialization_stats()
 print(f"Cache hit rate: {stats.get('cache_hit_rate', 0):.1%}")
 print(f"Specializations created: {stats.get('specializations_created', 0)}")
+
+# Check GPU status
+if is_gpu_available():
+    gpu_info = get_gpu_info()
+    mem_info = get_gpu_memory_info()
+    print(f"GPU: {gpu_info['devices'][0]['name']}")
+    print(f"Memory: {mem_info.used_gb:.1f}/{mem_info.total_gb:.1f} GB")
 ```
 
 ## 📦 Features
@@ -148,6 +181,16 @@ print(f"Specializations created: {stats.get('specializations_created', 0)}")
 - **Multi-level caching** with eviction policies
 - **Thread-safe** specialization cache
 - **Performance monitoring** and analytics
+
+### GPU Acceleration (Phase 1 - NEW! 🚀)
+- **Automatic GPU detection** with graceful CPU fallback
+- **Smart CPU/GPU dispatching** based on data size
+- **GPU memory management** with pooling and caching
+- **CuPy/CUDA integration** for array operations
+- **Configurable thresholds** for GPU usage
+- **Multi-GPU support** for device selection
+- **Zero code changes** - same API works on CPU or GPU
+- **Performance monitoring** with GPU statistics
 
 ### Advanced Caching System
 - **Specialization cache** with multiple eviction policies (LRU, LFU, Adaptive)
@@ -187,12 +230,15 @@ from python_optimizer import optimize
     profile=True,                # Enable performance profiling
     aggressiveness=2,            # Optimization level (0-3)
     cache=True,                  # Enable specialization caching
+    gpu=True,                    # Enable GPU acceleration (NEW!)
+    gpu_min_size=10_000,         # Minimum size to use GPU (NEW!)
     adaptive_learning=True,      # Enable adaptive optimization
     memory_limit_mb=100,         # Cache memory limit
     min_calls_for_spec=3         # Minimum calls before specialization
 )
 def your_function(x, y):
     # Your code here - automatically optimized based on usage patterns
+    # GPU acceleration for large arrays, JIT for numerical code
     return x * y + compute_heavy_operation()
 ```
 

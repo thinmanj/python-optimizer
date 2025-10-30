@@ -1,0 +1,52 @@
+"""GPU acceleration module for Python Optimizer.
+
+This module provides CUDA/GPU acceleration capabilities using CuPy and Numba.
+Automatically detects GPU availability and falls back to CPU when necessary.
+
+Key Features:
+- Automatic GPU detection and device management
+- GPU-accelerated JIT compilation
+- Smart CPU/GPU dispatch based on data size
+- GPU memory management and caching
+- Seamless fallback to CPU when GPU unavailable
+
+Usage:
+    from python_optimizer import optimize
+    
+    @optimize(gpu=True)
+    def my_function(data):
+        # Automatically runs on GPU if available
+        return data ** 2
+"""
+
+from python_optimizer.gpu.device import (
+    is_gpu_available,
+    get_gpu_device,
+    get_gpu_info,
+    set_gpu_device,
+    GPUDevice,
+)
+from python_optimizer.gpu.memory import (
+    GPUMemoryManager,
+    get_gpu_memory_info,
+    clear_gpu_cache,
+)
+from python_optimizer.gpu.dispatcher import GPUDispatcher
+from python_optimizer.gpu.kernels import GPUKernelLibrary
+
+__all__ = [
+    # Device management
+    "is_gpu_available",
+    "get_gpu_device",
+    "get_gpu_info",
+    "set_gpu_device",
+    "GPUDevice",
+    # Memory management
+    "GPUMemoryManager",
+    "get_gpu_memory_info",
+    "clear_gpu_cache",
+    # Dispatching
+    "GPUDispatcher",
+    # Kernels
+    "GPUKernelLibrary",
+]

@@ -41,6 +41,31 @@ from .profiling import (
     get_performance_stats,
 )
 
+# Import GPU components (optional - graceful degradation if not available)
+try:
+    from .gpu import (
+        GPUDevice,
+        GPUDispatcher,
+        GPUKernelLibrary,
+        GPUMemoryManager,
+        clear_gpu_cache,
+        get_gpu_device,
+        get_gpu_info,
+        get_gpu_memory_info,
+        is_gpu_available,
+        set_gpu_device,
+    )
+
+    _GPU_AVAILABLE = True
+except ImportError:
+    _GPU_AVAILABLE = False
+    # Provide stub functions for graceful degradation
+    def is_gpu_available():
+        return False
+
+    def get_gpu_info():
+        return {"available": False, "message": "GPU support not installed"}
+
 __all__ = [
     # Version and metadata
     "__version__",
@@ -71,4 +96,22 @@ __all__ = [
     "ProfilerConfig",
     "get_performance_stats",
     "clear_performance_stats",
+    # GPU (if available)
+    "is_gpu_available",
+    "get_gpu_info",
 ]
+
+# Add full GPU API to __all__ if available
+if _GPU_AVAILABLE:
+    __all__.extend(
+        [
+            "GPUDevice",
+            "GPUDispatcher",
+            "GPUKernelLibrary",
+            "GPUMemoryManager",
+            "clear_gpu_cache",
+            "get_gpu_device",
+            "get_gpu_memory_info",
+            "set_gpu_device",
+        ]
+    )
