@@ -214,7 +214,7 @@ class TestGeneticOptimizer:
         assert isinstance(result, OptimizationResult)
         assert isinstance(result.best_individual, Individual)
         assert len(result.generation_stats) == 3  # 3 generations
-        assert result.optimization_time > 0
+        assert result.optimization_time >= 0  # Allow 0 on fast systems
         assert result.total_evaluations > 0
 
     def test_optimize_improves_fitness(self, optimizer, sample_data):
