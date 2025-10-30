@@ -3,6 +3,7 @@ Genetic algorithm module for parameter optimization.
 """
 
 from .genetic_optimizer import (
+    BacktestFitnessEvaluator,
     FitnessEvaluator,
     GeneticOptimizer,
     Individual,
@@ -15,5 +16,6 @@ __all__ = [
     "ParameterRange",
     "OptimizationResult",
     "FitnessEvaluator",
+    "BacktestFitnessEvaluator",
     "GeneticOptimizer",
 ]
