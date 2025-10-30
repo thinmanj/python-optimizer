@@ -1,6 +1,6 @@
 [project]
 name = "python-optimizer"
-version = "0.1.0"
+version = "1.0.0"
 description = "High-performance Python optimization toolkit with JIT compilation, variable specialization, and runtime optimizations"
 readme = "README.md"
 requires-python = ">=3.11"
