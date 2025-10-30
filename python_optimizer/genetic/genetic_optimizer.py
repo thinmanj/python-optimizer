@@ -221,7 +221,7 @@ class GeneticOptimizer:
         child2 = Individual()
 
         genes = list(self.parameter_ranges.keys())
-        
+
         # Handle single-gene case
         if len(genes) <= 1:
             # Just copy genes directly (no crossover point possible)
