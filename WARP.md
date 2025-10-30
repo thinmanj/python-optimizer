@@ -24,10 +24,18 @@ pytest tests/ --cov=python_optimizer --cov-report=html --cov-report=term-missing
 
 # Run specific test file
 pytest tests/test_specialization.py
+pytest tests/test_genetic.py
+pytest tests/test_jit_profiling.py
 
 # Run benchmarks (marked as slow)
 pytest -m benchmark
 ```
+
+### Test Coverage by Module
+- **Core & Specialization:** `test_basic.py`, `test_specialization.py`, `test_specialization_cache.py`, `test_specialization_performance.py`
+- **Genetic Algorithm:** `test_genetic.py` (40+ tests)
+- **JIT & Profiling:** `test_jit_profiling.py` (50+ tests)
+- **Total Test Files:** 6 files with 150+ test cases
 
 ### Code Quality
 ```bash

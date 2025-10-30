@@ -172,12 +172,16 @@ class SpecializationCache:
                 # Dict format: {'arg_0': int, 'arg_1': str}
                 if param_types:
                     primary_type = next(iter(param_types.values()))
-                    key_data = f"primary:{primary_type.__name__}:{hash(str(usage_patterns))}"
+                    key_data = (
+                        f"primary:{primary_type.__name__}:{hash(str(usage_patterns))}"
+                    )
                     return hashlib.md5(key_data.encode()).hexdigest()[:16]
             else:
                 # Tuple format: (int, str)
                 primary_type = param_types[0]
-                key_data = f"primary:{primary_type.__name__}:{hash(str(usage_patterns))}"
+                key_data = (
+                    f"primary:{primary_type.__name__}:{hash(str(usage_patterns))}"
+                )
                 return hashlib.md5(key_data.encode()).hexdigest()[:16]
         return ""
 

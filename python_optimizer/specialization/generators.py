@@ -501,34 +501,40 @@ class SpecializationCodeGenerator:
                     @njit(cache=True, fastmath=True)
                     def int_specialized(*args, **kwargs):
                         return original_func(*args, **kwargs)
+
                     int_specialized.__optimization_gain__ = gain
                     int_specialized.__specialized_for__ = (param_name, param_type)
                     return int_specialized
-                    
+
                 elif param_type == float:
                     # Float-specialized version
                     @njit(cache=True, fastmath=True)
                     def float_specialized(*args, **kwargs):
                         return original_func(*args, **kwargs)
+
                     float_specialized.__optimization_gain__ = gain
                     float_specialized.__specialized_for__ = (param_name, param_type)
                     return float_specialized
-                    
+
                 else:
                     # Generic specialized version
                     def generic_specialized(*args, **kwargs):
                         return original_func(*args, **kwargs)
+
                     generic_specialized.__optimization_gain__ = gain
                     generic_specialized.__specialized_for__ = (param_name, param_type)
                     return generic_specialized
-            
-            specialized_func = create_specialized_wrapper(original_func, param_type, best_gain)
+
+            specialized_func = create_specialized_wrapper(
+                original_func, param_type, best_gain
+            )
             return specialized_func
 
         except Exception as e:
             # Failed to generate specialization - create a simple fallback
             def simple_specialized(*args, **kwargs):
                 return original_func(*args, **kwargs)
+
             simple_specialized.__optimization_gain__ = 0.1
             simple_specialized.__specialized_for__ = (param_name, param_type)
             return simple_specialized

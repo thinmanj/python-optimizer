@@ -84,6 +84,7 @@ jobs:
       continue-on-error: true
     
     - name: Run tests with pytest
+      shell: bash
       run: |
         pytest tests/ \
           --cov=python_optimizer \
