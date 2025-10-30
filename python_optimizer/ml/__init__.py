@@ -15,10 +15,10 @@ Supported Frameworks:
 
 Usage:
     from python_optimizer.ml import optimize_model, optimize_training
-    
+
     # Optimize PyTorch model
     optimized_model = optimize_model(model, device='cuda')
-    
+
     # Optimize training loop
     @optimize_training(mixed_precision=True, gpu=True)
     def train_step(model, data, target):
@@ -39,12 +39,12 @@ except ImportError:
 
 # Core ML optimization functions
 from python_optimizer.ml.pytorch_optimizer import (
-    optimize_model,
-    optimize_training,
-    optimize_inference,
+    InferenceOptimizer,
     PyTorchModelOptimizer,
     TrainingOptimizer,
-    InferenceOptimizer,
+    optimize_inference,
+    optimize_model,
+    optimize_training,
 )
 
 __all__ = [
@@ -63,7 +63,7 @@ __all__ = [
 
 def check_framework_availability():
     """Check which ML frameworks are available.
-    
+
     Returns:
         dict: Framework availability status
     """

@@ -4,10 +4,10 @@ Handles GPU device detection, selection, and information retrieval.
 Supports CUDA devices via CuPy with automatic fallback.
 """
 
-import os
 import logging
-from typing import Optional, Dict, Any
+import os
 from dataclasses import dataclass
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 

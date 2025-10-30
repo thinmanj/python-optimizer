@@ -5,9 +5,10 @@ and performance characteristics.
 """
 
 import logging
-import numpy as np
-from typing import Callable, Any, Tuple, Optional
 from functools import wraps
+from typing import Any, Callable, Optional, Tuple
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

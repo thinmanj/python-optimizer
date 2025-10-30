@@ -95,6 +95,7 @@ def optimize(
         if gpu:
             try:
                 from ..gpu.dispatcher import GPUDispatcher
+
                 dispatcher = GPUDispatcher(
                     min_size_threshold=gpu_min_size,
                     force_gpu=False,
@@ -103,7 +104,9 @@ def optimize(
                 optimized_fn = dispatcher.wrap(optimized_fn)
                 logger.debug(f"Applied GPU optimization to {fn.__name__}")
             except ImportError as e:
-                logger.warning(f"GPU optimization requested but unavailable: {e}. Falling back to CPU.")
+                logger.warning(
+                    f"GPU optimization requested but unavailable: {e}. Falling back to CPU."
+                )
 
         # Apply variable specialization if enabled
         if specialize:

@@ -12,7 +12,7 @@ Key Features:
 
 Usage:
     from python_optimizer import optimize
-    
+
     @optimize(gpu=True)
     def my_function(data):
         # Automatically runs on GPU if available
@@ -20,19 +20,19 @@ Usage:
 """
 
 from python_optimizer.gpu.device import (
-    is_gpu_available,
+    GPUDevice,
     get_gpu_device,
     get_gpu_info,
+    is_gpu_available,
     set_gpu_device,
-    GPUDevice,
-)
-from python_optimizer.gpu.memory import (
-    GPUMemoryManager,
-    get_gpu_memory_info,
-    clear_gpu_cache,
 )
 from python_optimizer.gpu.dispatcher import GPUDispatcher
 from python_optimizer.gpu.kernels import GPUKernelLibrary
+from python_optimizer.gpu.memory import (
+    GPUMemoryManager,
+    clear_gpu_cache,
+    get_gpu_memory_info,
+)
 
 __all__ = [
     # Device management

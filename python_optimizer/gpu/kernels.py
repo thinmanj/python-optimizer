@@ -5,8 +5,9 @@ using CuPy and Numba CUDA.
 """
 
 import logging
+from typing import Callable, Optional
+
 import numpy as np
-from typing import Optional, Callable
 
 logger = logging.getLogger(__name__)
 
