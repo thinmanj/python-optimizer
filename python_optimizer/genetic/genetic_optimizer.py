@@ -255,7 +255,7 @@ class GeneticOptimizer:
 
         start_time = time.time()
 
-        logger.info(f"Starting genetic algorithm optimization")
+        logger.info("Starting genetic algorithm optimization")
         logger.info(
             f"Population: {self.population_size}, Generations: {self.generations}"
         )
@@ -321,7 +321,7 @@ class GeneticOptimizer:
             new_population = new_population[: self.population_size]
 
             # Evaluate new individuals
-            new_individuals = new_population[self.elite_size :]
+            new_individuals = new_population[self.elite_size:]
             new_individuals = self.evaluate_population(new_individuals, data)
             total_evaluations += len(new_individuals)
 

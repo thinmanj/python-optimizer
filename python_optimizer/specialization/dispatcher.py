@@ -10,12 +10,12 @@ import threading
 import time
 import types
 from collections import defaultdict
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from .analyzer import TypeAnalyzer, TypePattern
+from .analyzer import TypeAnalyzer
 from .cache import CacheEntry, SpecializationCache, get_global_cache
 from .generators import SpecializationCodeGenerator
 
@@ -329,7 +329,7 @@ class AdaptiveDispatcher(RuntimeDispatcher):
         # Keep only recent history
         if len(self.performance_history[key]) > self.adaptation_window:
             self.performance_history[key] = self.performance_history[key][
-                -self.adaptation_window :
+                -self.adaptation_window:
             ]
 
         # Update effectiveness scores

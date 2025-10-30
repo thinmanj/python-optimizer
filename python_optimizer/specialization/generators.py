@@ -5,12 +5,11 @@ This module implements code generators that create type-specific optimized
 versions of functions based on detected patterns.
 """
 
-import ast
 import inspect
 import textwrap
 import types
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 from numba import njit
@@ -82,7 +81,7 @@ class NumericSpecializer(SpecializationGenerator):
             body_lines = []
             indent = len(lines[func_def_line]) - len(lines[func_def_line].lstrip())
 
-            for line in lines[func_def_line + 1 :]:
+            for line in lines[func_def_line + 1:]:
                 if line.strip() == "":
                     continue
                 line_indent = len(line) - len(line.lstrip())
@@ -99,13 +98,13 @@ class NumericSpecializer(SpecializationGenerator):
             for p_name, param in sig.parameters.items():
                 if p_name == param_name:
                     if param_type == int:
-                        params.append(f"{p_name}: int")
+                        params.append(f"{p_name}:int")
                     elif param_type == float:
-                        params.append(f"{p_name}: float")
+                        params.append(f"{p_name}:float")
                     elif param_type == complex:
-                        params.append(f"{p_name}: complex")
+                        params.append(f"{p_name}:complex")
                     else:
-                        params.append(f"{p_name}: {param_type.__name__}")
+                        params.append(f"{p_name}:{param_type.__name__}")
                 else:
                     params.append(str(param))
 
@@ -125,7 +124,7 @@ def {specialized_name}({param_str}):
 
             return textwrap.dedent(specialized_code).strip()
 
-        except Exception as e:
+        except Exception:
             # Fallback to simple wrapper
             return self._generate_simple_wrapper(original_func, param_name, param_type)
 
@@ -233,7 +232,7 @@ class ArraySpecializer(SpecializationGenerator):
         specialized_name = f"{func_name}_specialized_array_{param_name}"
 
         try:
-            source = inspect.getsource(original_func)
+            inspect.getsource(original_func)
 
             # Extract and optimize for array operations
             sig = inspect.signature(original_func)
@@ -259,7 +258,7 @@ def {specialized_name}({param_str}):
     # Assumes contiguous arrays for best performance
     if not {param_name}.flags['C_CONTIGUOUS']:
         {param_name} = np.ascontiguousarray({param_name})
-    
+
     # Original function logic with array optimizations
     return {func_name}_original({param_name})
 """
@@ -352,7 +351,7 @@ def {specialized_name}({param_name}: str):
     # Pre-validate string type for faster operations
     if not isinstance({param_name}, str):
         raise TypeError(f"Expected str, got {{type({param_name})}}")
-    
+
     # Optimized string operations
     return {func_name}_original({param_name})
 """
@@ -412,7 +411,7 @@ def {specialized_name}({param_name}: list):
         # Start with reasonable initial capacity
         {param_name} = [None] * 1000
         actual_size = 0
-    
+
     return {func_name}_original({param_name})
 """
         elif param_type == dict and "__getitem__" in operations:
@@ -423,7 +422,7 @@ def {specialized_name}({param_name}: dict):
     # Pre-validate dictionary type
     if not isinstance({param_name}, dict):
         raise TypeError(f"Expected dict, got {{type({param_name})}}")
-    
+
     # Use dict.get() instead of [] for safer access
     return {func_name}_original({param_name})
 """
@@ -530,7 +529,7 @@ class SpecializationCodeGenerator:
             )
             return specialized_func
 
-        except Exception as e:
+        except Exception:
             # Failed to generate specialization - create a simple fallback
             def simple_specialized(*args, **kwargs):
                 return original_func(*args, **kwargs)

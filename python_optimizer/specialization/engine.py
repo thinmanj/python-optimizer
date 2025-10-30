@@ -8,12 +8,12 @@ the existing @optimize decorator system.
 import functools
 import time
 import types
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, Optional, Tuple
 
 from .analyzer import TypeAnalyzer
-from .cache import SpecializationCache, get_global_cache
-from .dispatcher import AdaptiveDispatcher, DispatchResult, RuntimeDispatcher
+from .cache import get_global_cache
+from .dispatcher import AdaptiveDispatcher, RuntimeDispatcher
 from .generators import SpecializationCodeGenerator
 
 
@@ -143,7 +143,7 @@ class SpecializationEngine:
 
             return result
 
-        except Exception as e:
+        except Exception:
             # Fallback to original function on error
             return func(*args, **kwargs)
 

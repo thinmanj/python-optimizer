@@ -72,19 +72,13 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Example command
-    example_parser = subparsers.add_parser(
-        "example", help="Run basic optimization examples"
-    )
+    subparsers.add_parser("example", help="Run basic optimization examples")
 
     # Benchmark command
-    benchmark_parser = subparsers.add_parser(
-        "benchmark", help="Run performance benchmarks"
-    )
+    subparsers.add_parser("benchmark", help="Run performance benchmarks")
 
     # Stats command
-    stats_parser = subparsers.add_parser(
-        "stats", help="Show optimization and performance statistics"
-    )
+    subparsers.add_parser("stats", help="Show optimization and performance statistics")
 
     args = parser.parse_args()
 

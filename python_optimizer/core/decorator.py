@@ -7,7 +7,7 @@ various optimization techniques to Python functions.
 
 import functools
 import logging
-from typing import Any, Callable, Optional, Union
+from typing import Callable, Optional, Union
 
 from ..specialization.engine import get_global_engine as get_specialization_engine
 from .engine import OptimizationEngine

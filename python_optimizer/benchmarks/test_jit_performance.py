@@ -7,9 +7,6 @@ without relying on the original BacktestFitnessEvaluator.
 """
 
 import logging
-import os
-
-# Add the trading optimizer to the path
 import sys
 import time
 from typing import Dict, List
@@ -17,10 +14,11 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
+# Add the trading optimizer to the path
 sys.path.append("/Users/julio/Projects/Traiding/trading-optimizer")
 
-from trading_optimizer.genetic_optimizer import Individual
-from trading_optimizer.jit_fitness_evaluator import (
+from trading_optimizer.genetic_optimizer import Individual  # noqa: E402
+from trading_optimizer.jit_fitness_evaluator import (  # noqa: E402
     NUMBA_AVAILABLE,
     JITBacktestFitnessEvaluator,
     calculate_max_drawdown_jit,
@@ -28,7 +26,6 @@ from trading_optimizer.jit_fitness_evaluator import (
     calculate_sharpe_ratio_jit,
     generate_ma_signals_jit,
     generate_rsi_signals_jit,
-    simulate_strategy_jit,
 )
 
 # Setup logging
@@ -131,14 +128,16 @@ def test_individual_jit_functions():
     ma_signals = generate_ma_signals_jit(prices, 3, 5)
     ma_time = time.perf_counter() - start_time
     logger.info(
-        f"MA signal generation: {ma_time*1000:.2f}ms, signals: {np.sum(np.abs(ma_signals))}"
+        "MA signal generation: "
+        f"{ma_time*1000:.2f}ms, signals: {np.sum(np.abs(ma_signals))}"
     )
 
     start_time = time.perf_counter()
     rsi_signals = generate_rsi_signals_jit(prices, 5, 30, 70)
     rsi_time = time.perf_counter() - start_time
     logger.info(
-        f"RSI signal generation: {rsi_time*1000:.2f}ms, signals: {np.sum(np.abs(rsi_signals))}"
+        "RSI signal generation: "
+        f"{rsi_time*1000:.2f}ms, signals: {np.sum(np.abs(rsi_signals))}"
     )
 
 
@@ -158,7 +157,8 @@ def benchmark_jit_evaluator():
     for data_size in data_sizes:
         for pop_size in population_sizes:
             logger.info(
-                f"\\n--- Testing with {data_size} days of data, {pop_size} individuals ---"
+                f"\\n--- Testing with {data_size} days of data, "
+                f"{pop_size} individuals ---"
             )
 
             # Generate data and individuals
@@ -185,16 +185,13 @@ def benchmark_jit_evaluator():
             total_fitness = 0.0
 
             for i, individual in enumerate(individuals):
-                eval_start = time.perf_counter()
                 try:
-                    metrics = jit_evaluator.evaluate(individual, market_data)
+                    jit_evaluator.evaluate(individual, market_data)
                     if individual.fitness > -1000:  # Successful evaluation
                         successful_evaluations += 1
                         total_fitness += individual.fitness
                 except Exception as e:
                     logger.warning(f"Evaluation {i} failed: {e}")
-
-                eval_time = time.perf_counter() - eval_start
 
                 if (i + 1) % 20 == 0:
                     logger.info(f"  Completed {i+1}/{len(individuals)} evaluations")
@@ -221,7 +218,7 @@ def benchmark_jit_evaluator():
             all_results.append(result)
 
             # Print results
-            logger.info(f"\\nRESULTS:")
+            logger.info("\\nRESULTS:")
             logger.info(f"Total time:            {total_time:.3f}s")
             logger.info(f"Average eval time:     {avg_eval_time*1000:.2f}ms")
             logger.info(f"Evaluations per second: {evals_per_sec:.1f}")
@@ -251,9 +248,10 @@ def generate_summary_report(results: List[Dict]):
     logger.info(f"Average success rate: {avg_success_rate:.1f}%")
 
     # Detailed breakdown
-    logger.info(f"\\nDetailed Results:")
+    logger.info("\\nDetailed Results:")
     logger.info(
-        f"{'Data Size':<10} {'Pop Size':<10} {'Time (s)':<10} {'Eval/s':<10} {'Success %':<12} {'Avg Fitness':<12}"
+        f"{'Data Size':<10} {'Pop Size':<10} {'Time (s)':<10} "
+        f"{'Eval/s':<10} {'Success %':<12} {'Avg Fitness':<12}"
     )
     logger.info("-" * 70)
 
@@ -267,18 +265,18 @@ def generate_summary_report(results: List[Dict]):
         )
 
     # Performance insights
-    logger.info(f"\\nPERFORMANCE INSIGHTS:")
+    logger.info("\\nPERFORMANCE INSIGHTS:")
     logger.info(
-        f"• JIT compilation provides significant speedup for numerical computations"
+        "• JIT compilation provides significant speedup for numerical computations"
     )
     logger.info(f"• Average evaluation time: {avg_eval_time*1000:.1f}ms per individual")
     logger.info(f"• Throughput: {avg_evals_per_sec:.0f} evaluations per second")
     logger.info(f"• Numba JIT available: {NUMBA_AVAILABLE}")
 
     if NUMBA_AVAILABLE:
-        logger.info(f"• Using optimized Numba JIT compilation")
+        logger.info("• Using optimized Numba JIT compilation")
     else:
-        logger.info(f"• Warning: Numba not available, running in fallback mode")
+        logger.info("• Warning: Numba not available, running in fallback mode")
 
 
 def run_comprehensive_test():

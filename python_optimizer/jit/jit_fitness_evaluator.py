@@ -1,13 +1,13 @@
 """
 JIT-Optimized Fitness Evaluator
 
-Drop-in replacement for BacktestFitnessEvaluator with significant performance improvements
-through Numba JIT compilation of hot paths.
+Drop-in replacement for BacktestFitnessEvaluator with significant
+performance improvements through Numba JIT compilation of hot paths.
 """
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -135,7 +135,6 @@ def simulate_strategy_jit(
     equity_curve = np.zeros(len(prices))
     # Use typed list to help Numba inference
     trade_returns = np.array([0.0])  # Start with typed array instead of list
-    returns_count = 0
     total_trades = 0
 
     for i in range(len(signals)):

@@ -5,7 +5,7 @@ Core optimization engine that coordinates different optimization techniques.
 import functools
 import logging
 import time
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 logger = logging.getLogger(__name__)
 

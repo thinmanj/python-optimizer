@@ -10,7 +10,7 @@ import inspect
 import types
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -233,7 +233,7 @@ class TypeAnalyzer:
 
             return visitor.variables
 
-        except (OSError, TypeError) as e:
+        except (OSError, TypeError):
             # Can't get source (built-in functions, etc.)
             return {}
 
@@ -247,7 +247,7 @@ class TypeAnalyzer:
                 if param_name in variables and param_name != "return":
                     if isinstance(type_hint, type):
                         variables[param_name].add_type(type_hint)
-        except:
+        except Exception:
             pass
 
     def record_runtime_call(self, func_name: str, args: Tuple, kwargs: Dict):
@@ -338,9 +338,9 @@ class TypeAnalyzer:
         if param_type == np.ndarray:
             suggestions.extend(
                 [
-                    f"numpy_array_optimization",
-                    f"vectorized_array_operations",
-                    f"memory_efficient_array_ops",
+                    "numpy_array_optimization",
+                    "vectorized_array_operations",
+                    "memory_efficient_array_ops",
                 ]
             )
 

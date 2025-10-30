@@ -10,9 +10,8 @@ import os
 import pickle
 import threading
 import time
-import weakref
 from collections import OrderedDict, defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 
@@ -39,7 +38,10 @@ class CacheEntry:
 
     def _generate_cache_key(self) -> str:
         """Generate unique cache key for this specialization."""
-        key_data = f"{self.param_name}:{self.param_type.__name__}:{hash(str(self.usage_pattern))}"
+        key_data = (
+            f"{self.param_name}:{self.param_type.__name__}:"
+            f"{hash(str(self.usage_pattern))}"
+        )
         return hashlib.md5(key_data.encode()).hexdigest()[:16]
 
     def record_access(self):
@@ -382,7 +384,7 @@ class SpecializationCache:
                     try:
                         cache_path = os.path.join(func_path, cache_file)
                         with open(cache_path, "rb") as f:
-                            entry_data = pickle.load(f)
+                            pickle.load(f)
 
                         # Recreate cache entry (without the function)
                         # The function will be regenerated when needed

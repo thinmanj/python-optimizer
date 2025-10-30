@@ -3,19 +3,16 @@ Advanced caching system for function specializations with intelligent memory man
 adaptive eviction policies, and performance monitoring.
 """
 
-import functools
 import gc
-import hashlib
 import logging
-import pickle
 import sys
 import threading
 import time
 import weakref
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -193,7 +190,8 @@ class SpecializationEntry:
         try:
             size = sys.getsizeof(self)
             size += sys.getsizeof(self.key)
-            size += sys.getsizeof(self.specialized_func) if self.specialized_func else 0
+            if self.specialized_func:
+                size += sys.getsizeof(self.specialized_func)
             size += sys.getsizeof(self.original_args)
             size += sys.getsizeof(self.original_kwargs)
 
@@ -299,10 +297,13 @@ class AdaptiveEvictionStrategy:
 
         # Consider switching policy if performance is poor
         if current_score < 0.6 and len(self.policy_performance) > 1:
-            best_policy = max(self.policy_performance.items(), key=lambda x: x[1])[0]
+            best_policy = max(
+                self.policy_performance.items(), key=lambda x: x[1]
+            )[0]
             if best_policy != self.current_policy:
                 logger.info(
-                    f"Switching eviction policy from {self.current_policy} to {best_policy}"
+                    f"Switching eviction policy from "
+                    f"{self.current_policy} to {best_policy}"
                 )
                 self.current_policy = best_policy
                 self.policy_switch_count += 1

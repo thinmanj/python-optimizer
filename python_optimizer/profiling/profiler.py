@@ -3,7 +3,6 @@ Simple performance profiler for tracking optimization effectiveness.
 """
 
 import threading
-import time
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
