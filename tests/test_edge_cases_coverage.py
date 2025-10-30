@@ -49,8 +49,16 @@ class TestTypeAnalyzerEdgeCases:
         """Test analyzing function with type hints."""
         analyzer = TypeAnalyzer()
 
-        def typed_func(x: int, y: float) -> float:
-            return x + y
+        # Create function with exec to avoid indentation issues
+        exec_globals = {}
+        exec(
+            """
+def typed_func(x: int, y: float) -> float:
+    return x + y
+""",
+            exec_globals,
+        )
+        typed_func = exec_globals["typed_func"]
 
         usage = analyzer.analyze_function(typed_func)
 
@@ -169,8 +177,8 @@ class TestDispatcherEdgeCases:
 
     def test_dispatcher_with_empty_cache(self):
         """Test dispatcher behavior with empty cache."""
-        from python_optimizer.specialization.dispatcher import RuntimeDispatcher
         from python_optimizer.specialization.cache import SpecializationCache
+        from python_optimizer.specialization.dispatcher import RuntimeDispatcher
 
         def test_func(x):
             return x * 2
@@ -180,14 +188,16 @@ class TestDispatcherEdgeCases:
 
         # Dispatch the function
         result = dispatcher.dispatch(test_func, (5,), {})
-        
+
         # Should return a DispatchResult with original function
-        assert result.selected_function is test_func or result.selected_function(5) == 10
+        assert (
+            result.selected_function is test_func or result.selected_function(5) == 10
+        )
 
     def test_dispatcher_cache_miss_path(self):
         """Test dispatcher cache miss handling."""
-        from python_optimizer.specialization.dispatcher import RuntimeDispatcher
         from python_optimizer.specialization.cache import SpecializationCache
+        from python_optimizer.specialization.dispatcher import RuntimeDispatcher
 
         def test_func(x, y):
             return x + y
@@ -199,7 +209,7 @@ class TestDispatcherEdgeCases:
         result1 = dispatcher.dispatch(test_func, (5, 10), {})
         assert result1.selected_function(5, 10) == 15
 
-        # Call with different types - another cache miss  
+        # Call with different types - another cache miss
         result2 = dispatcher.dispatch(test_func, (5.0, 10.0), {})
         assert result2.selected_function(5.0, 10.0) == 15.0
 
