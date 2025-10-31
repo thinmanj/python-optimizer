@@ -34,6 +34,19 @@ from python_optimizer.gpu.memory import (
     get_gpu_memory_info,
 )
 
+# Try to import GPU genetic optimizer
+try:
+    from python_optimizer.gpu.genetic import (
+        GPUGeneticOptimizer,
+        optimize_genetic_gpu,
+    )
+
+    GPU_GENETIC_AVAILABLE = True
+except ImportError:
+    GPU_GENETIC_AVAILABLE = False
+    GPUGeneticOptimizer = None
+    optimize_genetic_gpu = None
+
 __all__ = [
     # Device management
     "is_gpu_available",
@@ -49,4 +62,8 @@ __all__ = [
     "GPUDispatcher",
     # Kernels
     "GPUKernelLibrary",
+    # GPU Optimizers
+    "GPUGeneticOptimizer",
+    "optimize_genetic_gpu",
+    "GPU_GENETIC_AVAILABLE",
 ]
