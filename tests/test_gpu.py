@@ -4,10 +4,11 @@ Tests GPU device detection, memory management, dispatching, and kernels.
 All tests work whether GPU is available or not (graceful degradation).
 """
 
-import pytest
-import numpy as np
-from unittest.mock import Mock, patch, MagicMock
 import os
+from unittest.mock import MagicMock, Mock, patch
+
+import numpy as np
+import pytest
 
 
 # Test GPU device module
@@ -52,7 +53,7 @@ class TestGPUDevice:
 
     def test_set_gpu_device_fails_gracefully(self):
         """Test set_gpu_device fails gracefully when GPU unavailable."""
-        from python_optimizer.gpu import set_gpu_device, is_gpu_available
+        from python_optimizer.gpu import is_gpu_available, set_gpu_device
 
         if not is_gpu_available():
             result = set_gpu_device(0)
@@ -98,9 +99,8 @@ class TestGPUDevice:
 
     def test_device_manager_singleton(self):
         """Test that device manager is a singleton."""
-        from python_optimizer.gpu.device import _device_manager
-
         # Check that multiple imports return same instance
+        from python_optimizer.gpu.device import _device_manager
         from python_optimizer.gpu.device import _device_manager as dm2
 
         assert _device_manager is dm2
@@ -193,8 +193,8 @@ class TestGPUDispatcher:
 
     def test_dispatcher_force_gpu(self):
         """Test dispatcher with force_gpu=True."""
-        from python_optimizer.gpu.dispatcher import GPUDispatcher
         from python_optimizer.gpu import is_gpu_available
+        from python_optimizer.gpu.dispatcher import GPUDispatcher
 
         dispatcher = GPUDispatcher(force_gpu=True)
         large_array = np.random.randn(100_000)
@@ -215,8 +215,8 @@ class TestGPUDispatcher:
 
     def test_dispatcher_size_threshold_large(self):
         """Test dispatcher with large array."""
-        from python_optimizer.gpu.dispatcher import GPUDispatcher
         from python_optimizer.gpu import is_gpu_available
+        from python_optimizer.gpu.dispatcher import GPUDispatcher
 
         dispatcher = GPUDispatcher(min_size_threshold=10_000)
         large_array = np.random.randn(100_000)
@@ -507,7 +507,7 @@ class TestGPUKernels:
 
     def test_convenience_functions(self):
         """Test convenience wrapper functions."""
-        from python_optimizer.gpu.kernels import gpu_sum, gpu_mean, gpu_matmul
+        from python_optimizer.gpu.kernels import gpu_matmul, gpu_mean, gpu_sum
 
         arr = np.array([1, 2, 3, 4, 5])
         assert gpu_sum(arr) == 15.0
@@ -526,7 +526,7 @@ class TestGPUIntegration:
 
     def test_gpu_imports_from_main_package(self):
         """Test that GPU functions can be imported from main package."""
-        from python_optimizer import is_gpu_available, get_gpu_info
+        from python_optimizer import get_gpu_info, is_gpu_available
 
         assert callable(is_gpu_available)
         assert callable(get_gpu_info)
@@ -617,7 +617,7 @@ class TestGPUPerformance:
 
     def test_gpu_memory_no_leak(self):
         """Test GPU doesn't leak memory on repeated calls."""
-        from python_optimizer import optimize, is_gpu_available
+        from python_optimizer import is_gpu_available, optimize
 
         if not is_gpu_available():
             pytest.skip("GPU not available")
@@ -634,6 +634,195 @@ class TestGPUPerformance:
 
         # If we got here without OOM, test passes
         assert result.shape == arr.shape
+
+
+# Test GPU Genetic Optimizer
+class TestGPUGeneticOptimizer:
+    """Tests for GPU genetic algorithm optimizer."""
+
+    def test_gpu_genetic_optimizer_import(self):
+        """Test GPUGeneticOptimizer can be imported."""
+        try:
+            from python_optimizer.gpu import (
+                GPU_GENETIC_AVAILABLE,
+                GPUGeneticOptimizer,
+            )
+
+            assert GPU_GENETIC_AVAILABLE is not None
+        except ImportError:
+            pytest.skip("GPU genetic optimizer not available")
+
+    def test_gpu_genetic_optimizer_initialization(self):
+        """Test GPUGeneticOptimizer initialization."""
+        try:
+            from python_optimizer.genetic import ParameterRange
+            from python_optimizer.gpu import GPUGeneticOptimizer
+        except ImportError:
+            pytest.skip("GPU genetic optimizer not available")
+
+        param_ranges = [
+            ParameterRange("x", -10.0, 10.0, "float"),
+            ParameterRange("y", -10.0, 10.0, "float"),
+        ]
+
+        optimizer = GPUGeneticOptimizer(
+            parameter_ranges=param_ranges,
+            population_size=50,
+            use_gpu=True,
+            force_cpu=False,
+        )
+
+        assert optimizer.population_size == 50
+        assert optimizer.use_gpu is True
+        assert hasattr(optimizer, "_gpu_available")
+
+    def test_gpu_genetic_optimizer_basic_optimization(self):
+        """Test GPUGeneticOptimizer runs basic optimization."""
+        try:
+            from python_optimizer.genetic import ParameterRange
+            from python_optimizer.gpu import GPUGeneticOptimizer
+        except ImportError:
+            pytest.skip("GPU genetic optimizer not available")
+
+        param_ranges = [
+            ParameterRange("x", -10.0, 10.0, "float"),
+        ]
+
+        def fitness_function(params):
+            x = params["x"]
+            return -(x**2)  # Maximize (minimum at x=0)
+
+        optimizer = GPUGeneticOptimizer(
+            parameter_ranges=param_ranges,
+            population_size=20,
+            use_gpu=True,
+        )
+
+        best = optimizer.optimize(
+            fitness_function=fitness_function, generations=10, verbose=False
+        )
+
+        # Should find something close to 0
+        assert best.parameters["x"] is not None
+        assert best.fitness is not None
+        # Best fitness should be better than random
+        assert best.fitness > -100
+
+    def test_gpu_genetic_optimizer_cpu_fallback(self):
+        """Test GPUGeneticOptimizer falls back to CPU."""
+        try:
+            from python_optimizer.genetic import ParameterRange
+            from python_optimizer.gpu import GPUGeneticOptimizer
+        except ImportError:
+            pytest.skip("GPU genetic optimizer not available")
+
+        param_ranges = [
+            ParameterRange("x", -5.0, 5.0, "float"),
+        ]
+
+        def fitness_function(params):
+            return -params["x"] ** 2
+
+        # Force CPU
+        optimizer = GPUGeneticOptimizer(
+            parameter_ranges=param_ranges,
+            population_size=10,
+            force_cpu=True,
+        )
+
+        assert optimizer.use_gpu is False
+
+        best = optimizer.optimize(
+            fitness_function=fitness_function, generations=5, verbose=False
+        )
+
+        assert best is not None
+
+    def test_gpu_genetic_optimizer_get_stats(self):
+        """Test GPU genetic optimizer statistics."""
+        try:
+            from python_optimizer.genetic import ParameterRange
+            from python_optimizer.gpu import GPUGeneticOptimizer
+        except ImportError:
+            pytest.skip("GPU genetic optimizer not available")
+
+        param_ranges = [
+            ParameterRange("x", -1.0, 1.0, "float"),
+        ]
+
+        def fitness_function(params):
+            return -params["x"] ** 2
+
+        optimizer = GPUGeneticOptimizer(
+            parameter_ranges=param_ranges, population_size=10
+        )
+
+        optimizer.optimize(
+            fitness_function=fitness_function, generations=3, verbose=False
+        )
+
+        stats = optimizer.get_gpu_stats()
+
+        assert isinstance(stats, dict)
+        assert "gpu_available" in stats
+        assert "gpu_enabled" in stats
+        assert "total_evaluations" in stats
+        assert "population_size" in stats
+
+    def test_gpu_genetic_optimizer_batch_processing(self):
+        """Test GPU genetic optimizer with custom batch size."""
+        try:
+            from python_optimizer.genetic import ParameterRange
+            from python_optimizer.gpu import GPUGeneticOptimizer
+        except ImportError:
+            pytest.skip("GPU genetic optimizer not available")
+
+        param_ranges = [
+            ParameterRange("x", 0.0, 10.0, "float"),
+        ]
+
+        def fitness_function(params):
+            return -abs(params["x"] - 5.0)  # Target x=5
+
+        optimizer = GPUGeneticOptimizer(
+            parameter_ranges=param_ranges,
+            population_size=20,
+            gpu_batch_size=5,  # Small batches
+        )
+
+        best = optimizer.optimize(
+            fitness_function=fitness_function, generations=5, verbose=False
+        )
+
+        # Should find something close to 5
+        assert 0 <= best.parameters["x"] <= 10
+        assert best.fitness is not None
+
+    def test_optimize_genetic_gpu_convenience_function(self):
+        """Test optimize_genetic_gpu convenience function."""
+        try:
+            from python_optimizer.genetic import ParameterRange
+            from python_optimizer.gpu import optimize_genetic_gpu
+        except ImportError:
+            pytest.skip("GPU genetic optimizer not available")
+
+        param_ranges = [
+            ParameterRange("x", -2.0, 2.0, "float"),
+        ]
+
+        def fitness_function(params):
+            return -params["x"] ** 2
+
+        best = optimize_genetic_gpu(
+            parameter_ranges=param_ranges,
+            fitness_function=fitness_function,
+            population_size=15,
+            generations=5,
+            use_gpu=True,
+        )
+
+        assert best is not None
+        assert best.parameters["x"] is not None
 
 
 if __name__ == "__main__":
