@@ -68,17 +68,25 @@ except ImportError:
         return {"available": False, "message": "GPU support not installed"}
 
 
-# Import ML optimization components (optional - requires PyTorch)
+# Import ML optimization components (optional - requires PyTorch/TensorFlow)
 try:
     from .ml import (
         InferenceOptimizer,
         PYTORCH_AVAILABLE,
         PYTORCH_VERSION,
         PyTorchModelOptimizer,
+        TENSORFLOW_AVAILABLE,
+        TENSORFLOW_VERSION,
+        TFInferenceOptimizer,
+        TFModelOptimizer,
+        TFTrainingOptimizer,
         TrainingOptimizer,
         check_framework_availability,
         optimize_inference,
         optimize_model,
+        optimize_tf_inference,
+        optimize_tf_model,
+        optimize_tf_training,
         optimize_training,
     )
 
@@ -87,6 +95,8 @@ except ImportError:
     _ML_AVAILABLE = False
     PYTORCH_AVAILABLE = False
     PYTORCH_VERSION = None
+    TENSORFLOW_AVAILABLE = False
+    TENSORFLOW_VERSION = None
 
     def check_framework_availability():
         return {
@@ -131,6 +141,7 @@ __all__ = [
     # ML optimization (if available)
     "check_framework_availability",
     "PYTORCH_AVAILABLE",
+    "TENSORFLOW_AVAILABLE",
 ]
 
 # Add full GPU API to __all__ if available
@@ -152,6 +163,7 @@ if _GPU_AVAILABLE:
 if _ML_AVAILABLE:
     __all__.extend(
         [
+            # PyTorch
             "PyTorchModelOptimizer",
             "TrainingOptimizer",
             "InferenceOptimizer",
@@ -159,5 +171,13 @@ if _ML_AVAILABLE:
             "optimize_training",
             "optimize_inference",
             "PYTORCH_VERSION",
+            # TensorFlow
+            "TFModelOptimizer",
+            "TFTrainingOptimizer",
+            "TFInferenceOptimizer",
+            "optimize_tf_model",
+            "optimize_tf_training",
+            "optimize_tf_inference",
+            "TENSORFLOW_VERSION",
         ]
     )
