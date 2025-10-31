@@ -1,7 +1,8 @@
 """GPU Optimization Examples
 
 Demonstrates GPU acceleration capabilities of Python Optimizer.
-Shows automatic CPU/GPU dispatching, memory management, and performance comparisons.
+Shows automatic CPU/GPU dispatching, memory management, and
+performance comparisons.
 
 Requirements:
     - CuPy (pip install cupy-cuda12x) for CUDA support
@@ -11,8 +12,10 @@ If GPU is not available, examples will automatically fall back to CPU.
 """
 
 import time
+
 import numpy as np
-from python_optimizer import optimize, is_gpu_available, get_gpu_info
+
+from python_optimizer import get_gpu_info, is_gpu_available, optimize
 
 
 def example_1_basic_gpu():
@@ -48,7 +51,11 @@ def example_1_basic_gpu():
         result = compute_with_gpu(data)
         elapsed = time.perf_counter() - start
 
-        print(f"Size {size:>10,}: {elapsed*1000:>8.3f} ms (result shape: {result.shape})")
+        msg = (
+            f"Size {size:>10,}: {elapsed*1000:>8.3f} ms "
+            f"(result shape: {result.shape})"
+        )
+        print(msg)
 
     print()
 
@@ -112,7 +119,7 @@ def example_3_matrix_operations():
         b = np.random.randn(size, size).astype(np.float32)
 
         start = time.perf_counter()
-        result = matrix_computation(a, b)
+        _ = matrix_computation(a, b)  # noqa: F841
         elapsed = time.perf_counter() - start
 
         print(f"Matrix {size}x{size}: {elapsed*1000:>8.3f} ms")
@@ -144,7 +151,11 @@ def example_4_combined_optimizations():
     start = time.perf_counter()
     result2 = combined_optimization(large_array, 3.0)
     elapsed = time.perf_counter() - start
-    print(f"Large array (50K): {elapsed*1000:.3f} ms, mean={np.mean(result2):.3f}")
+    msg = (
+        f"Large array (50K): {elapsed*1000:.3f} ms, "
+        f"mean={np.mean(result2):.3f}"
+    )
+    print(msg)
 
     print()
 
@@ -183,12 +194,12 @@ def example_5_performance_comparison():
 
         # CPU timing
         start = time.perf_counter()
-        result_cpu = compute_cpu(data.copy())
+        _ = compute_cpu(data.copy())  # noqa: F841
         cpu_time = time.perf_counter() - start
 
         # GPU timing
         start = time.perf_counter()
-        result_gpu = compute_gpu(data.copy())
+        _ = compute_gpu(data.copy())  # noqa: F841
         gpu_time = time.perf_counter() - start
 
         # Calculate speedup
@@ -202,22 +213,125 @@ def example_5_performance_comparison():
     print()
 
 
-def example_6_memory_management():
-    """Example 6: GPU memory management"""
+def example_6_gpu_genetic_optimizer():
+    """Example 6: GPU-accelerated genetic algorithm"""
     print("=" * 70)
-    print("Example 6: GPU Memory Management")
+    print("Example 6: GPU Genetic Algorithm Optimizer")
+    print("=" * 70)
+
+    try:
+        from python_optimizer.genetic import ParameterRange
+        from python_optimizer.gpu import (
+            GPU_GENETIC_AVAILABLE,
+            GPUGeneticOptimizer,
+        )
+    except ImportError:
+        print("GPU genetic optimizer not available")
+        print()
+        return
+
+    if not GPU_GENETIC_AVAILABLE:
+        print("GPU genetic optimizer not available")
+        print()
+        return
+
+    print("\nOptimizing f(x, y) = -(x^2 + y^2)")
+    print("Goal: Find minimum (should be at x=0, y=0)\n")
+
+    # Define parameter ranges
+    param_ranges = [
+        ParameterRange("x", -10.0, 10.0, "float"),
+        ParameterRange("y", -10.0, 10.0, "float"),
+    ]
+
+    # Fitness function to maximize
+    def fitness_function(params):
+        x, y = params["x"], params["y"]
+        # Simulate expensive computation
+        result = 0
+        for _ in range(100):  # Make it expensive
+            result += x**2 + y**2
+        return -result / 100
+
+    # CPU version (baseline)
+    from python_optimizer.genetic import GeneticOptimizer
+
+    print("Running CPU genetic algorithm...")
+    cpu_optimizer = GeneticOptimizer(
+        parameter_ranges=param_ranges,
+        population_size=100,
+        mutation_rate=0.1,
+        crossover_rate=0.7,
+    )
+
+    cpu_start = time.perf_counter()
+    cpu_best = cpu_optimizer.optimize(
+        fitness_function=fitness_function, generations=20, verbose=False
+    )
+    cpu_time = time.perf_counter() - cpu_start
+
+    print(f"CPU Time: {cpu_time:.2f}s")
+    print(
+        f"CPU Best: x={cpu_best.parameters['x']:.4f}, "
+        f"y={cpu_best.parameters['y']:.4f}, "
+        f"fitness={cpu_best.fitness:.4f}"
+    )
+
+    # GPU version
+    print("\nRunning GPU genetic algorithm...")
+    gpu_optimizer = GPUGeneticOptimizer(
+        parameter_ranges=param_ranges,
+        population_size=100,
+        mutation_rate=0.1,
+        crossover_rate=0.7,
+        use_gpu=True,
+        gpu_batch_size=50,
+    )
+
+    gpu_start = time.perf_counter()
+    gpu_best = gpu_optimizer.optimize(
+        fitness_function=fitness_function, generations=20, verbose=False
+    )
+    gpu_time = time.perf_counter() - gpu_start
+
+    print(f"GPU Time: {gpu_time:.2f}s")
+    print(
+        f"GPU Best: x={gpu_best.parameters['x']:.4f}, "
+        f"y={gpu_best.parameters['y']:.4f}, "
+        f"fitness={gpu_best.fitness:.4f}"
+    )
+
+    # Get GPU stats
+    stats = gpu_optimizer.get_gpu_stats()
+    print("\nGPU Statistics:")
+    print(f"  GPU enabled: {stats['gpu_enabled']}")
+    print(f"  GPU evaluations: {stats['gpu_evaluations']}")
+    print(f"  GPU usage: {stats['gpu_usage_percent']:.1f}%")
+
+    # Calculate speedup
+    if gpu_time > 0:
+        speedup = cpu_time / gpu_time
+        print(f"\nSpeedup: {speedup:.2f}x")
+
+    print()
+
+
+def example_7_memory_management():
+    """Example 7: GPU memory management"""
+    print("=" * 70)
+    print("Example 7: GPU Memory Management")
     print("=" * 70)
 
     if not is_gpu_available():
         print("GPU not available - skipping memory management example")
         return
 
-    from python_optimizer import get_gpu_memory_info, clear_gpu_cache
+    from python_optimizer import clear_gpu_cache, get_gpu_memory_info
 
     # Check initial memory
     mem_info = get_gpu_memory_info()
     if mem_info:
-        print(f"\nInitial GPU Memory:")
+        print("\nInitial GPU Memory:")
         print(f"  Total: {mem_info.total_gb:.2f} GB")
         print(f"  Free:  {mem_info.free_gb:.2f} GB")
         print(f"  Used:  {mem_info.used_gb:.2f} GB")
@@ -229,12 +343,12 @@ def example_6_memory_management():
         return np.ones(size) * 2.0
 
     print("\nAllocating 100M floats...")
-    result = allocate_large(100_000_000)
+    _ = allocate_large(100_000_000)  # noqa: F841
 
     # Check memory after allocation
     mem_info = get_gpu_memory_info()
     if mem_info:
-        print(f"\nAfter Allocation:")
+        print("\nAfter Allocation:")
         print(f"  Free:  {mem_info.free_gb:.2f} GB")
         print(f"  Used:  {mem_info.used_gb:.2f} GB")
         print(f"  Utilization: {mem_info.utilization_percent:.1f}%")
@@ -245,7 +359,7 @@ def example_6_memory_management():
 
     mem_info = get_gpu_memory_info()
     if mem_info:
-        print(f"\nAfter Cache Clear:")
+        print("\nAfter Cache Clear:")
         print(f"  Free:  {mem_info.free_gb:.2f} GB")
         print(f"  Used:  {mem_info.used_gb:.2f} GB")
 
@@ -265,7 +379,8 @@ def main():
         example_3_matrix_operations,
         example_4_combined_optimizations,
         example_5_performance_comparison,
-        example_6_memory_management,
+        example_6_gpu_genetic_optimizer,
+        example_7_memory_management,
     ]
 
     for example in examples:

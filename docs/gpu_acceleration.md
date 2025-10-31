@@ -221,6 +221,61 @@ print(f"Memory: {device.memory_gb:.2f} GB")
 print(f"Compute: {device.compute_capability}")
 ```
 
+### 6. GPU Genetic Algorithm Optimizer
+
+Accelerate genetic algorithm optimization with GPU-accelerated fitness
+evaluation:
+
+```python
+from python_optimizer.gpu import GPUGeneticOptimizer
+from python_optimizer.genetic import ParameterRange
+
+# Define parameter search space
+param_ranges = [
+    ParameterRange('x', -10.0, 10.0, 'float'),
+    ParameterRange('y', -10.0, 10.0, 'float'),
+]
+
+# Fitness function to maximize
+def fitness_function(params):
+    x, y = params['x'], params['y']
+    # Expensive computation here
+    return -(x**2 + y**2)
+
+# Create GPU genetic optimizer
+optimizer = GPUGeneticOptimizer(
+    parameter_ranges=param_ranges,
+    population_size=10000,  # Large population benefits from GPU
+    use_gpu=True,
+    gpu_batch_size=1000  # Process in batches
+)
+
+# Run optimization
+best = optimizer.optimize(
+    fitness_function=fitness_function,
+    generations=100,
+    verbose=True
+)
+
+print(f"Best parameters: {best.parameters}")
+print(f"Best fitness: {best.fitness}")
+
+# Check GPU statistics
+stats = optimizer.get_gpu_stats()
+print(f"GPU evaluations: {stats['gpu_evaluations']}")
+print(f"GPU time: {stats['gpu_time_seconds']:.2f}s")
+print(f"Speedup: {stats['gpu_usage_percent']:.1f}% on GPU")
+```
+
+**Expected Speedup**: 10-100x for large populations (>1000 individuals)
+
+**Key Features**:
+- Batch-based fitness evaluation on GPU
+- Automatic CPU fallback
+- Memory-efficient processing
+- Configurable batch sizes
+- Performance tracking and statistics
+
 ## API Reference
 
 ### Decorator Parameters
@@ -289,6 +344,56 @@ class GPUDispatcher:
 
     def get_stats() -> dict
         """Get dispatcher statistics."""
+```
+
+#### GPU Genetic Optimizer
+
+```python
+class GPUGeneticOptimizer(GeneticOptimizer):
+    def __init__(
+        self,
+        parameter_ranges: List[ParameterRange],
+        population_size: int = 100,
+        mutation_rate: float = 0.1,
+        crossover_rate: float = 0.7,
+        elitism_count: int = 2,
+        tournament_size: int = 3,
+        use_gpu: bool = True,
+        gpu_batch_size: Optional[int] = None,
+        force_cpu: bool = False
+    )
+    """GPU-accelerated genetic algorithm optimizer.
+
+    Args:
+        parameter_ranges: Parameter ranges to optimize
+        population_size: Population size (larger = more GPU benefit)
+        use_gpu: Enable GPU acceleration
+        gpu_batch_size: Batch size for GPU (None = auto)
+        force_cpu: Force CPU execution
+    """
+
+    def optimize(
+        self,
+        fitness_function: Callable,
+        generations: int = 100,
+        target_fitness: Optional[float] = None,
+        verbose: bool = True
+    ) -> Individual
+        """Run GPU-accelerated genetic optimization."""
+
+    def get_gpu_stats() -> dict
+        """Get GPU optimization statistics."""
+
+# Convenience function
+optimize_genetic_gpu(
+    parameter_ranges: List[ParameterRange],
+    fitness_function: Callable,
+    population_size: int = 100,
+    generations: int = 100,
+    use_gpu: bool = True,
+    **kwargs
+) -> Individual
+    """Quick GPU genetic optimization."""
 ```
 
 ### Environment Variables
