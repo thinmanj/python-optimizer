@@ -25,6 +25,10 @@ from python_optimizer.distributed.backend import (
 )
 from python_optimizer.distributed.coordinator import DistributedCoordinator
 from python_optimizer.distributed.decorator import distribute
+from python_optimizer.distributed.genetic import (
+    DistributedGeneticOptimizer,
+    optimize_genetic_distributed,
+)
 from python_optimizer.distributed.worker import DistributedWorker
 
 logger = logging.getLogger(__name__)
@@ -60,6 +64,9 @@ __all__ = [
     "DistributedCoordinator",
     "DistributedWorker",
     "distribute",
+    # Distributed genetic algorithm
+    "DistributedGeneticOptimizer",
+    "optimize_genetic_distributed",
     # Backend availability
     "RAY_AVAILABLE",
     "DASK_AVAILABLE",
