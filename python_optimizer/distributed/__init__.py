@@ -29,6 +29,16 @@ from python_optimizer.distributed.genetic import (
     DistributedGeneticOptimizer,
     optimize_genetic_distributed,
 )
+from python_optimizer.distributed.jit_cache import (
+    DistributedJITCache,
+    clear_distributed_jit_cache,
+    get_distributed_jit_cache,
+)
+from python_optimizer.distributed.spec_cache import (
+    DistributedSpecializationCache,
+    clear_distributed_spec_cache,
+    get_distributed_spec_cache,
+)
 from python_optimizer.distributed.worker import DistributedWorker
 
 logger = logging.getLogger(__name__)
@@ -67,6 +77,13 @@ __all__ = [
     # Distributed genetic algorithm
     "DistributedGeneticOptimizer",
     "optimize_genetic_distributed",
+    # Distributed caches
+    "DistributedJITCache",
+    "get_distributed_jit_cache",
+    "clear_distributed_jit_cache",
+    "DistributedSpecializationCache",
+    "get_distributed_spec_cache",
+    "clear_distributed_spec_cache",
     # Backend availability
     "RAY_AVAILABLE",
     "DASK_AVAILABLE",
