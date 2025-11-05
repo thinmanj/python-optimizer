@@ -71,12 +71,12 @@ except ImportError:
 # Import ML optimization components (optional - requires PyTorch/TensorFlow)
 try:
     from .ml import (
-        InferenceOptimizer,
         PYTORCH_AVAILABLE,
         PYTORCH_VERSION,
-        PyTorchModelOptimizer,
         TENSORFLOW_AVAILABLE,
         TENSORFLOW_VERSION,
+        InferenceOptimizer,
+        PyTorchModelOptimizer,
         TFInferenceOptimizer,
         TFModelOptimizer,
         TFTrainingOptimizer,

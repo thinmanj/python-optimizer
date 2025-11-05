@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 # Global profiling data
-_profile_data = defaultdict(
+_profile_data: Dict[str, Dict[str, Any]] = defaultdict(
     lambda: {
         "call_count": 0,
         "total_time": 0.0,
@@ -36,7 +36,7 @@ class PerformanceProfiler:
     def __init__(self, config: Optional[ProfilerConfig] = None):
         self.config = config or ProfilerConfig()
 
-    def profile_function(self, func_name: str, execution_time: float):
+    def profile_function(self, func_name: str, execution_time: float) -> None:
         """Record profiling data for a function."""
         if not self.config.enabled:
             return
@@ -56,7 +56,7 @@ def get_performance_stats() -> Dict[str, Any]:
         return dict(_profile_data)
 
 
-def clear_performance_stats():
+def clear_performance_stats() -> None:
     """Clear all performance statistics."""
     with _profile_lock:
         _profile_data.clear()

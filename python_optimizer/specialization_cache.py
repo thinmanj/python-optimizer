@@ -54,7 +54,7 @@ class SpecializationMetrics:
     specialization_type: SpecializationType = SpecializationType.TYPE_BASED
     success_rate: float = 1.0
 
-    def update_access(self, execution_time: float = 0.0, success: bool = True):
+    def update_access(self, execution_time: float = 0.0, success: bool = True) -> None:
         """Update metrics on access."""
         self.last_access_time = time.time()
         self.access_count += 1
@@ -184,11 +184,11 @@ class SpecializationEntry:
 
         # Create weak reference if enabled
         if config.enable_weak_references:
-            self._weak_ref = weakref.ref(specialized_func, self._cleanup)
+            self._weak_ref: Optional[weakref.ReferenceType[Callable[..., Any]]] = weakref.ref(specialized_func, self._cleanup)
         else:
             self._weak_ref = None
 
-    def _estimate_memory(self):
+    def _estimate_memory(self) -> None:
         """Estimate memory usage of this entry."""
         try:
             size = sys.getsizeof(self)
@@ -204,7 +204,7 @@ class SpecializationEntry:
         except Exception:
             self.metrics.memory_estimate = 1024  # Fallback estimate
 
-    def _cleanup(self, ref):
+    def _cleanup(self, ref: Any) -> None:
         """Cleanup callback for weak references."""
         logger.debug(f"Specialized function for key {self.key} was garbage collected")
 
@@ -223,13 +223,13 @@ class SpecializationEntry:
 
         return True
 
-    def get_specialized_func(self) -> Optional[Callable]:
+    def get_specialized_func(self) -> Optional[Callable[..., Any]]:
         """Get the specialized function, handling weak references."""
-        if self._weak_ref:
+        if self._weak_ref and self._weak_ref():
             return self._weak_ref()
         return self.specialized_func
 
-    def update_metrics(self, execution_time: float = 0.0, success: bool = True):
+    def update_metrics(self, execution_time: float = 0.0, success: bool = True) -> None:
         """Update metrics for this entry."""
         self.metrics.update_access(execution_time, success)
 
@@ -278,7 +278,7 @@ class AdaptiveEvictionStrategy:
         # Select candidates based on current policy
         return self._select_eviction_candidates(entries, memory_to_free, items_to_evict)
 
-    def _evaluate_policy_performance(self, entries: Dict[str, SpecializationEntry]):
+    def _evaluate_policy_performance(self, entries: Dict[str, SpecializationEntry]) -> None:
         """Evaluate current policy performance and switch if needed."""
         now = time.time()
 
@@ -499,7 +499,7 @@ class SpecializationCache:
     def put(
         self,
         key: str,
-        specialized_func: Callable,
+        specialized_func: Callable[..., Any],
         original_args: Tuple[Any, ...],
         original_kwargs: Dict[str, Any],
     ) -> SpecializationEntry:
@@ -528,7 +528,7 @@ class SpecializationCache:
                 return True
             return False
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear all entries."""
         with self._lock:
             self._entries.clear()
@@ -576,7 +576,7 @@ class SpecializationCache:
 
             return current_stats
 
-    def _maybe_evict(self):
+    def _maybe_evict(self) -> None:
         """Check if eviction is needed and perform it."""
         current_size = len(self._entries)
         current_memory_mb = sum(
@@ -595,14 +595,14 @@ class SpecializationCache:
 
             logger.debug(f"Evicted {len(candidates)} entries from specialization cache")
 
-    def _update_memory_stats(self):
+    def _update_memory_stats(self) -> None:
         """Update memory usage statistics."""
         total_memory = sum(
             entry.metrics.memory_estimate for entry in self._entries.values()
         )
         self._stats["total_memory_mb"] = total_memory / (1024 * 1024)
 
-    def maintenance(self):
+    def maintenance(self) -> None:
         """Perform periodic maintenance."""
         now = time.time()
 
@@ -651,7 +651,7 @@ def get_global_cache() -> SpecializationCache:
     return _global_cache
 
 
-def configure_cache(config: CacheConfiguration):
+def configure_cache(config: CacheConfiguration) -> None:
     """Configure the global cache."""
     global _global_cache
 
@@ -659,7 +659,7 @@ def configure_cache(config: CacheConfiguration):
         _global_cache = SpecializationCache(config)
 
 
-def clear_cache():
+def clear_cache() -> None:
     """Clear the global cache."""
     cache = get_global_cache()
     cache.clear()
