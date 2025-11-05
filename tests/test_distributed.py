@@ -16,6 +16,47 @@ from python_optimizer.distributed import (
 from python_optimizer.genetic import ParameterRange
 
 
+# Module-level functions for Windows multiprocessing compatibility
+def _square(x):
+    """Square function for testing."""
+    return x**2
+
+
+def _double(x):
+    """Double function for testing."""
+    return x * 2
+
+
+def _identity(x):
+    """Identity function for testing."""
+    return x
+
+
+def _fitness_origin(params):
+    """Fitness function targeting origin."""
+    x = params["x"]
+    y = params["y"]
+    return -(x**2 + y**2)
+
+
+def _fitness_x(p):
+    """Simple fitness based on x value."""
+    return p["x"]
+
+
+def _expensive_function(x):
+    """Expensive function for testing."""
+    return sum(i**2 for i in range(x))
+
+
+def _slow_function(x):
+    """Slow function for performance testing."""
+    total = 0
+    for i in range(10000):
+        total += i**2
+    return total + x
+
+
 class TestBackendAvailability:
     """Test backend availability detection."""
 
@@ -53,10 +94,7 @@ class TestBackendManagement:
         """Test task submission to backend."""
         backend = set_backend(BackendType.MULTIPROCESSING, num_workers=2)
 
-        def square(x):
-            return x**2
-
-        future = backend.submit(square, 5)
+        future = backend.submit(_square, 5)
         result = backend.gather([future])[0]
         assert result == 25
 
@@ -64,10 +102,7 @@ class TestBackendManagement:
         """Test mapping function over items."""
         backend = set_backend(BackendType.MULTIPROCESSING, num_workers=2)
 
-        def square(x):
-            return x**2
-
-        results = backend.map(square, [1, 2, 3, 4, 5])
+        results = backend.map(_square, [1, 2, 3, 4, 5])
         assert results == [1, 4, 9, 16, 25]
 
 
@@ -85,10 +120,7 @@ class TestDistributedCoordinator:
         set_backend(BackendType.MULTIPROCESSING, num_workers=2)
         coordinator = DistributedCoordinator()
 
-        def double(x):
-            return x * 2
-
-        results = coordinator.map(double, [1, 2, 3, 4])
+        results = coordinator.map(_double, [1, 2, 3, 4])
         assert results == [2, 4, 6, 8]
 
     def test_coordinator_statistics(self):
@@ -96,7 +128,7 @@ class TestDistributedCoordinator:
         set_backend(BackendType.MULTIPROCESSING, num_workers=2)
         coordinator = DistributedCoordinator()
 
-        coordinator.map(lambda x: x**2, [1, 2, 3])
+        coordinator.map(_square, [1, 2, 3])
 
         stats = coordinator.get_stats()
         assert stats["tasks_submitted"] == 3
@@ -110,7 +142,7 @@ class TestDistributedCoordinator:
 
         # Sum of squares
         result = coordinator.reduce(
-            lambda x: x**2,
+            _square,
             [1, 2, 3, 4],
             lambda a, b: a + b,
             initial=0,
@@ -120,7 +152,7 @@ class TestDistributedCoordinator:
     def test_coordinator_empty_map(self):
         """Test mapping over empty list."""
         coordinator = DistributedCoordinator()
-        results = coordinator.map(lambda x: x, [])
+        results = coordinator.map(_identity, [])
         assert results == []
 
 
@@ -153,12 +185,6 @@ class TestDistributedGeneticOptimizer:
             ParameterRange("y", -5.0, 5.0, "float"),
         ]
 
-        def fitness(params):
-            # Maximize -(x^2 + y^2) (minimum at origin)
-            x = params["x"]
-            y = params["y"]
-            return -(x**2 + y**2)
-
         optimizer = DistributedGeneticOptimizer(
             parameter_ranges=param_ranges,
             population_size=20,
@@ -166,7 +192,7 @@ class TestDistributedGeneticOptimizer:
         )
 
         best = optimizer.optimize(
-            fitness_function=fitness,
+            fitness_function=_fitness_origin,
             generations=5,
             verbose=False,
         )
@@ -187,7 +213,7 @@ class TestDistributedGeneticOptimizer:
         )
 
         optimizer.optimize(
-            fitness_function=lambda p: p["x"],
+            fitness_function=_fitness_x,
             generations=3,
             verbose=False,
         )
@@ -210,10 +236,7 @@ class TestIntegration:
         coordinator = DistributedCoordinator()
 
         # Distribute computation
-        def expensive_function(x):
-            return sum(i**2 for i in range(x))
-
-        results = coordinator.map(expensive_function, [10, 20, 30, 40])
+        results = coordinator.map(_expensive_function, [10, 20, 30, 40])
 
         assert len(results) == 4
         assert all(r > 0 for r in results)
@@ -232,18 +255,11 @@ class TestPerformance:
         """Test that multiprocessing provides speedup."""
         import time
 
-        def slow_function(x):
-            # Simulate expensive computation
-            total = 0
-            for i in range(10000):
-                total += i**2
-            return total + x
-
         items = list(range(100))
 
         # Sequential execution
         start = time.perf_counter()
-        sequential_results = [slow_function(x) for x in items]
+        sequential_results = [_slow_function(x) for x in items]
         sequential_time = time.perf_counter() - start
 
         # Distributed execution
@@ -251,7 +267,7 @@ class TestPerformance:
         coordinator = DistributedCoordinator()
 
         start = time.perf_counter()
-        distributed_results = coordinator.map(slow_function, items)
+        distributed_results = coordinator.map(_slow_function, items)
         distributed_time = time.perf_counter() - start
 
         # Results should match
