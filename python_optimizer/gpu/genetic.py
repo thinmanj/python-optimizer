@@ -10,11 +10,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 
-from python_optimizer.genetic import (
-    GeneticOptimizer,
-    Individual,
-    ParameterRange,
-)
+from python_optimizer.genetic import Individual, ParameterRange
 from python_optimizer.gpu.device import is_gpu_available
 
 logger = logging.getLogger(__name__)
@@ -28,7 +24,7 @@ except ImportError:
     cp = None
 
 
-class GPUGeneticOptimizer(GeneticOptimizer):
+class GPUGeneticOptimizer:
     """GPU-accelerated genetic algorithm optimizer.
 
     Extends GeneticOptimizer to perform fitness evaluation and population
@@ -91,14 +87,16 @@ class GPUGeneticOptimizer(GeneticOptimizer):
             gpu_batch_size: Batch size for GPU processing (None = auto).
             force_cpu: Force CPU execution even if GPU available.
         """
-        super().__init__(
-            parameter_ranges=parameter_ranges,
-            population_size=population_size,
-            mutation_rate=mutation_rate,
-            crossover_rate=crossover_rate,
-            elitism_count=elitism_count,
-            tournament_size=tournament_size,
-        )
+        self.parameter_ranges = parameter_ranges
+        self.population_size = population_size
+        self.mutation_rate = mutation_rate
+        self.crossover_rate = crossover_rate
+        self.elitism_count = elitism_count
+        self.tournament_size = tournament_size
+        self.population = []
+        self.best_individual = None
+        import random
+        self._random = random.Random()
 
         self.use_gpu = use_gpu and not force_cpu
         self.force_cpu = force_cpu
@@ -124,6 +122,69 @@ class GPUGeneticOptimizer(GeneticOptimizer):
             f"GPU={'enabled' if self.use_gpu else 'disabled'}, "
             f"population={population_size}"
         )
+
+    def _initialize_population(self):
+        """Initialize random population."""
+        self.population = []
+        for _ in range(self.population_size):
+            ind = Individual()
+            ind.parameters = {}
+            for param_range in self.parameter_ranges:
+                if param_range.param_type == "float":
+                    ind.parameters[param_range.name] = self._random.uniform(
+                        param_range.min_val, param_range.max_val
+                    )
+                elif param_range.param_type == "int":
+                    ind.parameters[param_range.name] = self._random.randint(
+                        int(param_range.min_val), int(param_range.max_val)
+                    )
+            ind.fitness = None
+            self.population.append(ind)
+
+    def _tournament_selection(self):
+        """Select individual using tournament selection."""
+        tournament = self._random.sample(
+            self.population, min(self.tournament_size, len(self.population))
+        )
+        return max(tournament, key=lambda x: x.fitness if x.fitness else float("-inf"))
+
+    def _crossover(self, parent1, parent2):
+        """Create two children via crossover."""
+        child1, child2 = Individual(), Individual()
+        child1.parameters, child2.parameters = {}, {}
+        
+        for param_range in self.parameter_ranges:
+            name = param_range.name
+            if self._random.random() < 0.5:
+                child1.parameters[name] = parent1.parameters[name]
+                child2.parameters[name] = parent2.parameters[name]
+            else:
+                child1.parameters[name] = parent2.parameters[name]
+                child2.parameters[name] = parent1.parameters[name]
+        
+        child1.fitness = None
+        child2.fitness = None
+        return child1, child2
+
+    def _mutate(self, individual):
+        """Mutate individual."""
+        mutated = Individual()
+        mutated.parameters = individual.parameters.copy()
+        
+        for param_range in self.parameter_ranges:
+            if self._random.random() < self.mutation_rate:
+                name = param_range.name
+                if param_range.param_type == "float":
+                    mutated.parameters[name] = self._random.uniform(
+                        param_range.min_val, param_range.max_val
+                    )
+                elif param_range.param_type == "int":
+                    mutated.parameters[name] = self._random.randint(
+                        int(param_range.min_val), int(param_range.max_val)
+                    )
+        
+        mutated.fitness = None
+        return mutated
 
     def evaluate_population(
         self, fitness_function: Callable[[Dict[str, Any]], float]

@@ -9,12 +9,13 @@ from typing import Callable, List, Optional
 
 from python_optimizer.distributed.backend import get_backend
 from python_optimizer.distributed.coordinator import DistributedCoordinator
-from python_optimizer.genetic import GeneticOptimizer, Individual, ParameterRange
+from python_optimizer.genetic import Individual, ParameterRange
+import random
 
 logger = logging.getLogger(__name__)
 
 
-class DistributedGeneticOptimizer(GeneticOptimizer):
+class DistributedGeneticOptimizer:
     """Distributed genetic algorithm optimizer.
 
     Extends GeneticOptimizer to distribute fitness evaluation across workers.
@@ -49,13 +50,14 @@ class DistributedGeneticOptimizer(GeneticOptimizer):
             num_workers: Number of workers (None for auto)
             backend: Backend to use ('multiprocessing', 'ray', 'dask')
         """
-        super().__init__(
-            parameter_ranges=parameter_ranges,
-            population_size=population_size,
-            mutation_rate=mutation_rate,
-            crossover_rate=crossover_rate,
-            elitism_count=elitism_count,
-        )
+        self.parameter_ranges = parameter_ranges
+        self.population_size = population_size
+        self.mutation_rate = mutation_rate
+        self.crossover_rate = crossover_rate
+        self.elitism_count = elitism_count
+        self.population = []
+        self.best_individual = None
+        self._random = random.Random()
 
         self.num_workers = num_workers
         self.backend = backend
@@ -97,6 +99,69 @@ class DistributedGeneticOptimizer(GeneticOptimizer):
         self.distributed_stats["distributed_evaluations"] += len(population)
 
         return fitness_scores
+
+    def _initialize_population(self):
+        """Initialize random population."""
+        self.population = []
+        for _ in range(self.population_size):
+            ind = Individual()
+            ind.parameters = {}
+            for param_range in self.parameter_ranges:
+                if param_range.param_type == "float":
+                    ind.parameters[param_range.name] = self._random.uniform(
+                        param_range.min_val, param_range.max_val
+                    )
+                elif param_range.param_type == "int":
+                    ind.parameters[param_range.name] = self._random.randint(
+                        int(param_range.min_val), int(param_range.max_val)
+                    )
+            ind.fitness = None
+            self.population.append(ind)
+
+    def _tournament_selection(self, tournament_size=3):
+        """Select individual using tournament selection."""
+        tournament = self._random.sample(
+            self.population, min(tournament_size, len(self.population))
+        )
+        return max(tournament, key=lambda x: x.fitness if x.fitness else float("-inf"))
+
+    def _crossover(self, parent1, parent2):
+        """Create two children via crossover."""
+        child1, child2 = Individual(), Individual()
+        child1.parameters, child2.parameters = {}, {}
+        
+        for param_range in self.parameter_ranges:
+            name = param_range.name
+            if self._random.random() < 0.5:
+                child1.parameters[name] = parent1.parameters[name]
+                child2.parameters[name] = parent2.parameters[name]
+            else:
+                child1.parameters[name] = parent2.parameters[name]
+                child2.parameters[name] = parent1.parameters[name]
+        
+        child1.fitness = None
+        child2.fitness = None
+        return child1, child2
+
+    def _mutate(self, individual):
+        """Mutate individual."""
+        mutated = Individual()
+        mutated.parameters = individual.parameters.copy()
+        
+        for param_range in self.parameter_ranges:
+            if self._random.random() < self.mutation_rate:
+                name = param_range.name
+                if param_range.param_type == "float":
+                    mutated.parameters[name] = self._random.uniform(
+                        param_range.min_val, param_range.max_val
+                    )
+                elif param_range.param_type == "int":
+                    mutated.parameters[name] = self._random.randint(
+                        int(param_range.min_val), int(param_range.max_val)
+                    )
+        
+        mutated.fitness = None
+        return mutated
 
     def optimize(
         self,
