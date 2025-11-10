@@ -35,7 +35,7 @@ jobs:
         pip list --outdated --format=json > outdated-packages.json || true
     
     - name: Upload dependency reports
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: dependency-reports
         path: |
