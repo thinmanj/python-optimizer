@@ -19,6 +19,19 @@ from python_optimizer.distributed.jit_cache import (
 )
 
 
+# Module-level functions for pickling (Windows/multiprocessing compatibility)
+def _test_multiply_by_two(x):
+    return x * 2
+
+
+def _test_multiply_by_three(x):
+    return x * 3
+
+
+def _test_add_one(x):
+    return x + 1
+
+
 class TestDistributedJITCacheBasics:
     """Basic functionality tests for distributed JIT cache."""
 
@@ -62,8 +75,8 @@ class TestDistributedJITCacheBasics:
         def test_func():
             return 42
 
-        # Mock compiled function
-        compiled_func = lambda x: x * 2
+        # Use module-level function (picklable)
+        compiled_func = _test_multiply_by_two
 
         options = {"fastmath": True}
         key = cache._generate_key(test_func, options)
